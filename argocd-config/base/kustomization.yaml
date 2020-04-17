@@ -21,3 +21,4 @@ resources:
 - team-management.yaml
 - teleport.yaml
 - topolvm.yaml
+- rook.yaml
