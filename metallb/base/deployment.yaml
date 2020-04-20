@@ -8,7 +8,8 @@ spec:
     spec:
       containers:
       - name: speaker
-        image: quay.io/cybozu/metallb:0.8.3.1
+        image: quay.io/cybozu/metallb:0.9.3.1
+        imagePullPolicy: IfNotPresent
         command: ["/speaker"]
         securityContext:
           capabilities:
@@ -16,6 +17,15 @@ spec:
         resources:
           limits:
             cpu: null
+        env:
+        - $patch: delete
+          name: METALLB_ML_BIND_ADDR
+        - $patch: delete
+          name: METALLB_ML_LABELS
+        - $patch: delete
+          name: METALLB_ML_NAMESPACE
+        - $patch: delete
+          name: METALLB_ML_SECRET_KEY
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -31,7 +41,8 @@ spec:
     spec:
       containers:
       - name: controller
-        image: quay.io/cybozu/metallb:0.8.3.1
+        image: quay.io/cybozu/metallb:0.9.3.1
+        imagePullPolicy: IfNotPresent
         command: ["/controller"]
         resources:
           limits:
