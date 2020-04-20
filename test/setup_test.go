@@ -197,6 +197,26 @@ func testSetup() {
 		if withKind {
 			applyAndWaitForApplications("kind")
 		} else if doStorageTest {
+			ExecSafeAt(boot0, "ckecli", "constraints", "set", "minimum-workers", "4")
+			Eventually(func() error {
+				stdout, stderr, err := ExecAt(boot0, "kubectl", "get", "nodes", "-o", "json")
+				if err != nil {
+					return fmt.Errorf("stdout: %s, stderr: %s, err: %v", stdout, stderr, err)
+				}
+
+				var nl corev1.NodeList
+				err = json.Unmarshal(stdout, &nl)
+				if err != nil {
+					return err
+				}
+
+				// control-plane: 3, minimum-workers: 4
+				if len(nl.Items) != 7 {
+					return fmt.Errorf("too few nodes: %d", len(nl.Items))
+				}
+
+				return nil
+			}).Should(Succeed())
 			applyAndWaitForApplications("gcp-storage")
 		} else {
 			applyAndWaitForApplications("gcp")
