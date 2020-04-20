@@ -195,7 +195,7 @@ func testSetup() {
 		}
 		ExecSafeAt(boot0, "sed", "-i", "s/release/"+commitID+"/", "./neco-apps/argocd-config/base/*.yaml")
 		if withKind {
-			applyAndWaitForApplications("kind")
+			applyAndWaitForApplications("kind", commitID)
 		} else if doStorageTest {
 			ExecSafeAt(boot0, "ckecli", "constraints", "set", "minimum-workers", "4")
 			Eventually(func() error {
@@ -217,9 +217,9 @@ func testSetup() {
 
 				return nil
 			}).Should(Succeed())
-			applyAndWaitForApplications("gcp-storage")
+			applyAndWaitForApplications("gcp-storage", commitID)
 		} else {
-			applyAndWaitForApplications("gcp")
+			applyAndWaitForApplications("gcp", commitID)
 		}
 	})
 
@@ -260,7 +260,7 @@ func testSetup() {
 	}
 }
 
-func applyAndWaitForApplications(overlay string) {
+func applyAndWaitForApplications(overlay, commitID string) {
 	By("creating Argo CD app")
 	Eventually(func() error {
 		stdout, stderr, err := ExecAt(boot0, "argocd", "app", "create", "argocd-config",
@@ -270,7 +270,7 @@ func applyAndWaitForApplications(overlay string) {
 			"--dest-namespace", "argocd",
 			"--dest-server", "https://kubernetes.default.svc",
 			"--sync-policy", "none",
-			"--revision", "release")
+			"--revision", commitID)
 		if err != nil {
 			return fmt.Errorf("stdout: %s, stderr: %s, err: %v", stdout, stderr, err)
 		}
