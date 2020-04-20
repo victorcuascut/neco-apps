@@ -319,6 +319,60 @@ func applyAndWaitForApplications(overlay string) {
 		return nil
 	}).Should(Succeed())
 
+	// TODO: this block should be deleted after cert-manager v0.14 is deployed on prod
+	if doUpgrade {
+		By("deleting old(v0.12) cert-manager")
+		Eventually(func() error {
+			appStdout, stderr, err := ExecAt(boot0, "argocd", "app", "get", "-o", "json", "cert-manager")
+			if err != nil {
+				return fmt.Errorf("stdout: %s, stderr: %s, err: %v", appStdout, stderr, err)
+			}
+			var app argocd.Application
+			err = json.Unmarshal(appStdout, &app)
+			if err != nil {
+				return fmt.Errorf("stdout: %s, err: %v", appStdout, err)
+			}
+			if app.Status.Sync.ComparedTo.Source.TargetRevision != commitID {
+				return errors.New("cert-manager does not have correct target yet")
+			}
+
+			return nil
+		}).Should(Succeed())
+
+		stdout, stderr, err := ExecAt(boot0, "argocd", "app", "set", "cert-manager", "--sync-policy", "none")
+		Expect(err).ShouldNot(HaveOccurred(), "stdout=%s, stderr=%s", stdout, stderr)
+		stdout, stderr, err = ExecAt(boot0, "kubectl", "delete", "-n", "cert-manager", "deployment", "cert-manager", "cert-manager-cainjector", "cert-manager-webhook")
+		Expect(err).ShouldNot(HaveOccurred(), "stdout=%s, stderr=%s", stdout, stderr)
+		Eventually(func() error {
+			resources := []string{
+				"cert-manager",
+				"cert-manager-cainjector",
+				"cert-manager-webhook",
+			}
+			for _, v := range resources {
+				_, _, err := ExecAt(boot0, "kubectl", "get", "deployment", "-n", "cert-manager", v)
+				if err == nil {
+					return fmt.Errorf("deployment still exists %s", v)
+				}
+			}
+			return nil
+		}).Should(Succeed())
+		Eventually(func() error {
+			stdout, stderr, err = ExecAt(boot0, "argocd", "app", "sync", "cert-manager", "--force")
+			if err != nil {
+				return fmt.Errorf("stdout: %s, stderr: %s, err: %v", stdout, stderr, err)
+			}
+			return nil
+		}).Should(Succeed())
+		Eventually(func() error {
+			stdout, stderr, err = ExecAt(boot0, "argocd", "app", "set", "cert-manager", "--sync-policy", "automated", "--auto-prune", "--self-heal")
+			if err != nil {
+				return fmt.Errorf("stdout: %s, stderr: %s, err: %v", stdout, stderr, err)
+			}
+			return nil
+		}).Should(Succeed())
+	}
+
 	By("waiting initialization")
 	checkAllAppsSynced := func() error {
 	OUTER:
@@ -360,8 +414,17 @@ func applyAndWaitForApplications(overlay string) {
 		}
 		return nil
 	}
-	Eventually(checkAllAppsSynced).Should(Succeed())
-	Consistently(checkAllAppsSynced, 10*time.Second, 1*time.Second).Should(Succeed())
+	// want to do "Eventually( Consistently(checkAllAppsSynced, 30sec, 1sec) )"
+	Eventually(func() error {
+		for i := 0; i < 30; i++ {
+			err := checkAllAppsSynced()
+			if err != nil {
+				return err
+			}
+			time.Sleep(1 * time.Second)
+		}
+		return nil
+	}).Should(Succeed())
 }
 
 func setupArgoCD() {
