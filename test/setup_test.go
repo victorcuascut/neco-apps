@@ -197,6 +197,7 @@ func testSetup() {
 		if withKind {
 			applyAndWaitForApplications("kind", commitID)
 		} else if doStorageTest {
+			ExecSafeAt(boot0, "ckecli", "sabakan", "enable")
 			ExecSafeAt(boot0, "ckecli", "constraints", "set", "minimum-workers", "4")
 			Eventually(func() error {
 				stdout, stderr, err := ExecAt(boot0, "kubectl", "get", "nodes", "-o", "json")
@@ -217,6 +218,7 @@ func testSetup() {
 
 				return nil
 			}).Should(Succeed())
+			ExecSafeAt(boot0, "ckecli", "sabakan", "disable")
 			applyAndWaitForApplications("gcp-storage", commitID)
 		} else {
 			applyAndWaitForApplications("gcp", commitID)
