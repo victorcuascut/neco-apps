@@ -3,10 +3,11 @@ package test
 import (
 	"encoding/json"
 	"fmt"
+	"strings"
+
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	appsv1 "k8s.io/api/apps/v1"
-	"strings"
 )
 
 func testRookOperator() {
@@ -121,7 +122,7 @@ spec:
 			"--no-ssl", "--host=${BUCKET_HOST}", "--host-bucket=", "s3://${BUCKET_NAME}")
 		Expect(err).ShouldNot(HaveOccurred(), "stdout=%s, stderr=%s", stdout, stderr)
 
-		stdout, stderr, err = ExecAt(boot0, "kubctl", "exec", "-n", ns, "pod-ob", "--", "s3cmd", "ls", "s3://${BUCKET_NAME}",
+		stdout, _, _ = ExecAt(boot0, "kubctl", "exec", "-n", ns, "pod-ob", "--", "s3cmd", "ls", "s3://${BUCKET_NAME}",
 			"--no-ssl", "--host=${BUCKET_HOST}", "--host-bucket=", "s3://${BUCKET_NAME}")
 		Expect(stdout).NotTo(BeEmpty())
 
