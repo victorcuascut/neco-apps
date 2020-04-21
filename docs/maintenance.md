@@ -55,7 +55,7 @@ Then, import YAML manifests as follows:
 
 ```console
 $ git checkout vX.Y.Z
-$ cp examples/contour/*.yaml /path/to/neco-apps/ingress/base/contour/
+$ cp examples/contour/*.yaml $GOPATH/src/github.com/cybozu-go/neco-apps/ingress/base/contour/
 ```
 
 Note that:
@@ -69,17 +69,15 @@ Note that:
 
 ## metallb
 
-Check [releases](https://github.com/danderson/metallb/releases)
+Check [releases](https://github.com/metallb/metallb/releases)
 
 Download manifests and remove `Namespace` resource from it as follows:
 
 ```console
-$ git clone https://github.com/danderson/metallb
+$ git clone https://github.com/metallb/metallb
 $ cd metallb
 $ git checkout vX.Y.Z
-$ cp manifests/*.yaml /path/to/neco-apps/metallb/base/upstream
-$ vi metallb/base/upstream/metallb.yaml
-  (Remove Namespace resources)
+$ cp manifests/*.yaml $GOPATH/src/github.com/cybozu-go/neco-apps/metallb/base/upstream
 ```
 
 ## metrics-server
@@ -92,7 +90,7 @@ Download the upstream manifest as follows:
 $ git clone https://github.com/kubernetes-sigs/metrics-server
 $ cd metrics-server
 $ git checkout vX.Y.Z
-$ cp deploy/1.8+/*.yaml /path/to/neco-apps/metrics-server/base/upstream
+$ cp deploy/1.8+/*.yaml $GOPATH/src/github.com/cybozu-go/neco-apps/metrics-server/base/upstream
 ```
 
 ## monitoring
@@ -102,9 +100,17 @@ $ cp deploy/1.8+/*.yaml /path/to/neco-apps/metrics-server/base/upstream
 There is no official kubernetes manifests for prometheus.
 So, check changes in release notes on github for both prometheus and alertmanager and make necessary actions.
 
+### machines-endpoints
+
+Update version following [this link](https://github.com/cybozu/neco-containers/blob/master/machines-endpoints/TAG)
+
 ### kube-state-metrics
 
 Check [examples/standard](https://github.com/kubernetes/kube-state-metrics/tree/master/examples/standard)
+
+## neco-admission
+
+Update version following [this link](https://github.com/cybozu/neco-containers/blob/master/admission/TAG)
 
 ## network-policy (Calico)
 
@@ -133,5 +139,5 @@ Download the upstream manifest as follows:
 $ git clone https://github.com/cybozu-go/topolvm
 $ cd topolvm
 $ git checkout vX.Y.Z
-$ cp deploy/manifests/*.yaml /path/to/neco-apps/topolvm/base/upstream
+$ cp deploy/manifests/*.yaml $GOPATH/src/github.com/cybozu-go/neco-apps/topolvm/base/upstream
 ```
