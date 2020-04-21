@@ -8,7 +8,7 @@ metadata:
     kubernetes.io/ingress.class: bastion
 spec:
   virtualhost:
-    fqdn: grafana.monitoring.tokyo0.cybozu-ne.co
+    fqdn: grafana.monitoring.stage0.cybozu-ne.co
     tls:
       secretName: grafana-tls
   routes:
@@ -18,5 +18,5 @@ spec:
         response: 2m
         idle: 5m
       services:
-        - name: grafana
+        - name: grafana-service
           port: 80

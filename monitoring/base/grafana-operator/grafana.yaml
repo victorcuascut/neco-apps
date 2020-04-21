@@ -4,13 +4,18 @@ metadata:
   name: grafana
 spec:
   service:
-    type: LoadBalancer
+    type: ClusterIP
+    ports:
+    - name: service
+      port: 80
+      protocol: TCP
+      targetPort: 3000
   deployment:
     envFrom:
-      - secretRef:
-        name: github-auth-secret
       - configMapRef:
-        name: https-proxy
+          name: https-proxy
+      - secretRef:
+          name: github-auth-xxxxxxxxxx
     securityContext:
       runAsUser: 10000
   config:

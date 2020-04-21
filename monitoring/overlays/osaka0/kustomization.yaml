@@ -3,9 +3,8 @@ kind: Kustomization
 bases:
   - ../../base
 resources:
-  - grafana/httpproxy.yaml
-patches:
-  - grafana/statefulset.yaml
+  - grafana-operator/httpproxy.yaml
+patchesStrategicMerge:
   - prometheus/statefulset.yaml
 configMapGenerator:
   - name: alertmanager
