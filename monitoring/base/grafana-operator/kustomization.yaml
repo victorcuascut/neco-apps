@@ -1,0 +1,20 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: monitoring
+resources:
+  - datasources/datasource.yaml
+  - grafana.yaml
+  - upstream/cluster_roles/cluster_role_aggregate_grafana_admin_edit.yaml
+  - upstream/cluster_roles/cluster_role_aggregate_grafana_view.yaml
+  - upstream/cluster_roles/cluster_role_binding_grafana_operator.yaml
+  - upstream/cluster_roles/cluster_role_grafana_operator.yaml
+  - upstream/crds/Grafana.yaml
+  - upstream/crds/GrafanaDashboard.yaml
+  - upstream/crds/GrafanaDataSource.yaml
+  - upstream/operator.yaml
+  - upstream/roles/role.yaml
+  - upstream/roles/role_binding.yaml
+  - upstream/roles/service_account.yaml
+patchesStrategicMerge:
+  - cluster-role-binding.yaml
+  - operator.yaml

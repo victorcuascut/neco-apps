@@ -1,0 +1,14 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: grafana-operator
+spec:
+  template:
+    spec:
+      containers:
+        - name: grafana-operator
+          image: quay.io/cybozu/grafana-operator:3.2.0.1
+          args:
+            - --grafana-image quay.io/cybozu/grafana
+            - --grafana-image-tag 6.7.2.2
+            - --scan-all
