@@ -47,8 +47,8 @@ func testRookRGW() {
 				return err
 			}
 			health := strings.TrimSpace(string(stdout))
-			if health != "HEALTHY" {
-				return fmt.Errorf("ceph cluster is not HEALTHY: %s", health)
+			if health != "HEALTH_OK" {
+				return fmt.Errorf("ceph cluster is not HEALTH_OK: %s", health)
 			}
 			return nil
 		}).Should(Succeed())
@@ -148,8 +148,8 @@ func testRookRBD() {
 				return err
 			}
 			health := strings.TrimSpace(string(stdout))
-			if health != "HEALTHY" {
-				return fmt.Errorf("ceph cluster is not HEALTHY: %s", health)
+			if health != "HEALTH_OK" {
+				return fmt.Errorf("ceph cluster is not HEALTH_OK: %s", health)
 			}
 			return nil
 		}).Should(Succeed())
