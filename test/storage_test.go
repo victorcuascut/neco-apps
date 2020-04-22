@@ -109,7 +109,7 @@ spec:
 		Expect(err).NotTo(HaveOccurred(), "stderr: %s", stderr)
 
 		Eventually(func() error {
-			stdout, stderr, err := ExecAt(boot0, "kubectl", "-n", ns, "exec", "ubuntu", "--", "date")
+			stdout, stderr, err := ExecAt(boot0, "kubectl", "-n", ns, "exec", "pod-ob", "--", "date")
 			if err != nil {
 				return fmt.Errorf("stdout: %s, stderr: %s, err: %v", stdout, stderr, err)
 			}
