@@ -14,7 +14,7 @@ spec:
         storageClassName: topolvm-provisioner
         resources:
           requests:
-            storage: 10Gi
+            storage: 5Gi
   mgr:
     modules:
       - name: pg_autoscaler
@@ -26,7 +26,7 @@ spec:
   storage:
     storageClassDeviceSets:
       - name: set1
-        count: 1
+        count: 3
         volumeClaimTemplates:
           - metadata:
               name: data
