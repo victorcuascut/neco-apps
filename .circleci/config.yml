@@ -165,20 +165,6 @@ jobs:
           no_output_timeout: 31m
       - delete-instance
 
-  upgrade-master:
-    docker:
-      - image: google/cloud-sdk
-    steps:
-      - checkout
-      - boot-dctest
-      - run:
-          name: Bootstrap neco-apps at master
-          command: |
-            export NECO_DIR=$(pwd)/neco
-            TARGET=dctest-upgrade ./bin/run-test.sh
-          no_output_timeout: 31m
-      - delete-instance
-
   upgrade-stage:
     docker:
       - image: google/cloud-sdk
@@ -314,12 +300,6 @@ workflows:
           name: bootstrap
           requires:
             - hold
-      - upgrade-master:
-          requires:
-            - hold
-          filters:
-            branches:
-              ignore: ["master", "stage", "release", /^op-(stage|release)-.*/]
       - upgrade-release:
           requires:
             - hold
