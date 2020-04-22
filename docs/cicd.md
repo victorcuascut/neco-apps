@@ -22,7 +22,7 @@ The GCP instance name is `neco-apps-<CircleCI Build Number>`. If the job succeed
 CircleCI Workflow
 -----------------
 
-This repository has 4 CircleCI workflows, `main`, `daily`, `manual-dctest` and `production-release`.
+This repository has 4 CircleCI workflows: `main`, `daily`, `manual-dctest` and `manual-dctest-with-neco-feature-branch`.
 
 ### `main` workflow
 
@@ -50,15 +50,13 @@ This repository has 4 CircleCI workflows, `main`, `daily`, `manual-dctest` and `
 
 `manual-dctest` workflow is not executed automatically.  This provides full-scale test for all branches, which can be triggered from Web UI.
 
-This consists of the following 6 jobs.
+This consists of the following 3 jobs.
 
 | job name                    | description                                                                            | target branch                                                                     |
 | --------------------------- | -------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------- |
 | `bootstrap`                 | Bootstrap test on GCP instances                                                        | all branches                                                                      |
-| `upgrade-master`            | Upgrade test from `master` branch                                                      | all branches except `master`, `stage`, `release`, `op-release-*` and `op-stage-*` |
 | `upgrade-stage`             | Upgrade test from `stage` branch (staging env)                                         | all branches                                                                      |
 | `upgrade-release`           | Upgrade test from `release` branch (production env)                                    | all branches                                                                      |
-| `create-pull-request-stage` | Create PR to stage, then trigger `create-pull-request-stage` of the secret repository. | `master`                                                                          |
 
 ### `manual-dctest-with-neco-feature-branch` workflow
 
