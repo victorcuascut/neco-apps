@@ -5,11 +5,6 @@ metadata:
 spec:
   service:
     type: ClusterIP
-    ports:
-    - name: service
-      port: 80
-      protocol: TCP
-      targetPort: 3000
   deployment:
     envFrom:
       - configMapRef:
