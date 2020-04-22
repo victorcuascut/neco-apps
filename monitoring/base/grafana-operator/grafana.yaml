@@ -32,4 +32,4 @@ spec:
       allowed_organizations: cybozu-private
   dashboardLabelSelector:
     - matchExpressions:
-        - {key: app, operator: In, values: [grafana]}
+        - {key: app.kubernetes.io/name, operator: In, values: [grafana]}
