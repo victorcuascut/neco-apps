@@ -179,7 +179,7 @@ spec:
             fieldRef:
               apiVersion: v1
               fieldPath: metadata.name
-        image: quay.io/cybozu/envoy:1.13.1.1
+        image: quay.io/cybozu/envoy:1.13.1.2
         imagePullPolicy: IfNotPresent
         lifecycle:
           preStop:
@@ -197,15 +197,15 @@ spec:
           protocol: TCP
         livenessProbe:
           httpGet:
-            path: /ready
-            port: 8002
+            path: /
+            port: 8003
           initialDelaySeconds: 3
           periodSeconds: 3
           failureThreshold: 6
         readinessProbe:
           httpGet:
-            path: /ready
-            port: 8002
+            path: /
+            port: 8003
           initialDelaySeconds: 3
           periodSeconds: 3
         volumeMounts:
@@ -213,6 +213,10 @@ spec:
           name: envoy-config
         - mountPath: /certs
           name: envoycert
+      - name: liveness-probe
+        image: quay.io/cybozu/envoy:1.13.1.2
+        command:
+          - /livenessprobe
       initContainers:
       - args:
         - bootstrap
