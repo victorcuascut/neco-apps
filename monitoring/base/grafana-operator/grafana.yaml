@@ -10,7 +10,7 @@ spec:
       - configMapRef:
           name: https-proxy
       - secretRef:
-          name: github-auth-xxxxxxxxxx
+          name: github-auth-20200423
     securityContext:
       runAsUser: 10000
   config:
