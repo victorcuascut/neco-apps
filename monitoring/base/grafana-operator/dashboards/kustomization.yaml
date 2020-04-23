@@ -21,5 +21,6 @@ resources:
   - local-pv-provisioner.yaml
   - memory-usage.yaml
   - neco-admission.yaml
+  - node-exporter.yaml
   - sabakan.yaml
   - topolvm-volumegroup.yaml
