@@ -116,13 +116,13 @@ spec:
 			return nil
 		}).Should(Succeed())
 
-		stdout, stderr, err := ExecAt(boot0, "kubctl", "exec", "-n", ns, "pod-ob", "--", "echo", "foobar", ">", "/tmp/foobar")
+		stdout, stderr, err := ExecAt(boot0, "kubectl", "exec", "-n", ns, "pod-ob", "--", "echo", "foobar", ">", "/tmp/foobar")
 		Expect(err).ShouldNot(HaveOccurred(), "stdout=%s, stderr=%s", stdout, stderr)
-		stdout, stderr, err = ExecAt(boot0, "kubctl", "exec", "-n", ns, "pod-ob", "--", "s3cmd", "put", "/tmp/foobar",
+		stdout, stderr, err = ExecAt(boot0, "kubectl", "exec", "-n", ns, "pod-ob", "--", "s3cmd", "put", "/tmp/foobar",
 			"--no-ssl", "--host=${BUCKET_HOST}", "--host-bucket=", "s3://${BUCKET_NAME}")
 		Expect(err).ShouldNot(HaveOccurred(), "stdout=%s, stderr=%s", stdout, stderr)
 
-		stdout, _, _ = ExecAt(boot0, "kubctl", "exec", "-n", ns, "pod-ob", "--", "s3cmd", "ls", "s3://${BUCKET_NAME}",
+		stdout, _, _ = ExecAt(boot0, "kubectl", "exec", "-n", ns, "pod-ob", "--", "s3cmd", "ls", "s3://${BUCKET_NAME}",
 			"--no-ssl", "--host=${BUCKET_HOST}", "--host-bucket=", "s3://${BUCKET_NAME}")
 		Expect(stdout).NotTo(BeEmpty())
 
