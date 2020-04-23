@@ -6,6 +6,7 @@ resources:
   - grafana-operator/httpproxy.yaml
 patchesStrategicMerge:
   - prometheus/statefulset.yaml
+  - grafana-operator/grafana.yaml
 configMapGenerator:
   - name: alertmanager
     behavior: merge

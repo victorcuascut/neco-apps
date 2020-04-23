@@ -18,18 +18,28 @@ spec:
       mode: "console"
       level: "warn"
     auth:
-      disable_login_form: False
-      disable_signout_menu: True
+      disable_login_form: false
+      disable_signout_menu: true
     auth.anonymous:
-      enabled: True
+      enabled: false
     auth.github:
-      enabled: True
+      enabled: true
       allow_sign_up: true
       scopes: user:email,read:org
       auth_url: https://github.com/login/oauth/authorize
       token_url: https://github.com/login/oauth/access_token
       api_url: https://api.github.com/user
       allowed_organizations: cybozu-private
+    server:
+      domain: grafana.monitoring.gcp0.dev-ne.co
+      root_url: https://grafana.monitoring.gcp0.dev-ne.co
+    analytics:
+      check_for_updates: true
+    grafana_net:
+      url: https://grafana.monitoring.svc.cluster.local
+    users:
+      viewers_can_edit: true
+      auto_assign_org_role: Viewer
   dashboardLabelSelector:
     - matchExpressions:
         - {key: app.kubernetes.io/name, operator: In, values: [grafana]}
