@@ -95,6 +95,7 @@ spec:
   containers:
   - name: mycontainer
     image: quay.io/cybozu/ubuntu-debug:18.04
+    imagePullPolicy: Always
     args:
     - infinity
     command:
@@ -116,18 +117,18 @@ spec:
 			return nil
 		}).Should(Succeed())
 
-		stdout, stderr, err := ExecAt(boot0, "kubectl", "exec", "-n", ns, "pod-ob", "--", "echo", "foobar", ">", "/tmp/foobar")
+		stdout, stderr, err := ExecAt(boot0, "kubectl", "exec", "-n", ns, "pod-ob", "--", "sh", "-c", `"echo foobar > /tmp/foobar"`)
 		Expect(err).ShouldNot(HaveOccurred(), "stdout=%s, stderr=%s", stdout, stderr)
-		stdout, stderr, err = ExecAt(boot0, "kubectl", "exec", "-n", ns, "pod-ob", "--", "s3cmd", "put", "/tmp/foobar",
-			"--no-ssl", "--host=${BUCKET_HOST}", "--host-bucket=", "s3://${BUCKET_NAME}")
+		stdout, stderr, err = ExecAt(boot0, "kubectl", "exec", "-n", ns, "pod-ob", "--", "sh", "-c",
+			`"s3cmd put /tmp/foobar --no-ssl --host=\${BUCKET_HOST} --host-bucket= s3://\${BUCKET_NAME}"`)
 		Expect(err).ShouldNot(HaveOccurred(), "stdout=%s, stderr=%s", stdout, stderr)
 
-		stdout, _, _ = ExecAt(boot0, "kubectl", "exec", "-n", ns, "pod-ob", "--", "s3cmd", "ls", "s3://${BUCKET_NAME}",
-			"--no-ssl", "--host=${BUCKET_HOST}", "--host-bucket=", "s3://${BUCKET_NAME}")
+		stdout, _, _ = ExecAt(boot0, "kubectl", "exec", "-n", ns, "pod-ob", "--", "sh", "-c",
+			`"s3cmd ls s3://\${BUCKET_NAME} --no-ssl --host=\${BUCKET_HOST} --host-bucket= s3://\${BUCKET_NAME}"`)
 		Expect(stdout).NotTo(BeEmpty())
 
-		stdout, stderr, err = ExecAt(boot0, "kubectl", "exec", "-n", ns, "pod-ob", "--", "s3cmd", "get",
-			"s3://${BUCKET_NAME}/foobar", "/tmp/downloaded", "--no-ssl", "--host=${BUCKET_HOST}", "--host-bucket=")
+		stdout, stderr, err = ExecAt(boot0, "kubectl", "exec", "-n", ns, "pod-ob", "--", "sh", "-c",
+			`"s3cmd get s3://\${BUCKET_NAME}/foobar /tmp/downloaded --no-ssl --host=\${BUCKET_HOST} --host-bucket="`)
 		Expect(err).ShouldNot(HaveOccurred(), "stdout=%s, stderr=%s", stdout, stderr)
 		stdout, stderr, err = ExecAt(boot0, "kubectl", "exec", "-n", ns, "pod-ob", "--", "cat", "/tmp/downloaded")
 		Expect(err).ShouldNot(HaveOccurred(), "stdout=%s, stderr=%s", stdout, stderr)
@@ -202,6 +203,7 @@ spec:
   containers:
   - name: ubuntu
     image: quay.io/cybozu/ubuntu-debug:18.04
+    imagePullPolicy: Always
     command: ["/usr/local/bin/pause"]
     volumeMounts:
     - mountPath: /test1
