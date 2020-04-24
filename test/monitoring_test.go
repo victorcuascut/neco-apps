@@ -228,7 +228,7 @@ func testGrafanaOperator() {
 	It("should be deployed successfully", func() {
 		Eventually(func() error {
 			stdout, _, err := ExecAt(boot0, "kubectl", "--namespace=monitoring",
-				"get", "deployment/grafana", "-o=json")
+				"get", "deployment/grafana-deployment", "-o=json")
 			if err != nil {
 				return err
 			}
