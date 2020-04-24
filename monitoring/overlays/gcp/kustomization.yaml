@@ -4,6 +4,7 @@ bases:
   - ../../base
 patchesStrategicMerge:
   - prometheus/statefulset.yaml
+  - grafana-operator/grafana.yaml
 configMapGenerator:
   - name: alertmanager
     behavior: merge

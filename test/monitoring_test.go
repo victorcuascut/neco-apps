@@ -224,22 +224,22 @@ func testAlertmanager() {
 	})
 }
 
-func testGrafana() {
+func testGrafanaOperator() {
 	It("should be deployed successfully", func() {
 		Eventually(func() error {
 			stdout, _, err := ExecAt(boot0, "kubectl", "--namespace=monitoring",
-				"get", "statefulset/grafana", "-o=json")
+				"get", "deployment/grafana", "-o=json")
 			if err != nil {
 				return err
 			}
-			statefulSet := new(appsv1.StatefulSet)
-			err = json.Unmarshal(stdout, statefulSet)
+			deployment := new(appsv1.Deployment)
+			err = json.Unmarshal(stdout, deployment)
 			if err != nil {
 				return err
 			}
 
-			if int(statefulSet.Status.ReadyReplicas) != 1 {
-				return fmt.Errorf("ReadyReplicas is not 1: %d", int(statefulSet.Status.ReadyReplicas))
+			if int(deployment.Status.ReadyReplicas) != 1 {
+				return fmt.Errorf("ReadyReplicas is not 1: %d", int(deployment.Status.ReadyReplicas))
 			}
 			return nil
 		}).Should(Succeed())
@@ -247,7 +247,7 @@ func testGrafana() {
 
 	It("should have data sources and dashboards", func() {
 		By("getting external IP of grafana service")
-		stdout, stderr, err := ExecAt(boot0, "kubectl", "--namespace=monitoring", "get", "services", "grafana", "-o=json")
+		stdout, stderr, err := ExecAt(boot0, "kubectl", "--namespace=monitoring", "get", "services", "grafana-service", "-o=json")
 		Expect(err).NotTo(HaveOccurred(), "stdout: %s, stderr: %s, err: %v", stdout, stderr, err)
 		service := new(corev1.Service)
 		err = json.Unmarshal(stdout, service)
@@ -291,8 +291,7 @@ func testGrafana() {
 				return err
 			}
 
-			// NOTE: expectedNum is the number of JSON files under monitoring/base/grafana/dashboards + 1(Node Exporter Full).
-			// Node Exporter Full is downloaded every time from the Internet because too large to store into configMap.
+			// NOTE: expectedNum is the number of files under monitoring/base/grafana/dashboards
 			if len(dashboards) != numGrafanaDashboard {
 				return fmt.Errorf("len(dashboards) should be %d: %d", numGrafanaDashboard, len(dashboards))
 			}
