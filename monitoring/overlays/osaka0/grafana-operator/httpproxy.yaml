@@ -19,4 +19,4 @@ spec:
         idle: 5m
       services:
         - name: grafana-service
-          port: 3000
+          port: 80
