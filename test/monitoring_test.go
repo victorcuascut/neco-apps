@@ -9,6 +9,7 @@ import (
 	"path/filepath"
 	"reflect"
 	"sort"
+	"strconv"
 	"strings"
 
 	. "github.com/onsi/ginkgo"
@@ -253,10 +254,11 @@ func testGrafanaOperator() {
 		err = json.Unmarshal(stdout, service)
 		Expect(err).NotTo(HaveOccurred())
 		loadBalancerIP := service.Status.LoadBalancer.Ingress[0].IP
+		exposedPort := strconv.Itoa(int(service.Spec.Ports[0].Port))
 
 		By("getting admin stats from grafana")
 		Eventually(func() error {
-			stdout, stderr, err := ExecAt(boot0, "curl", "-u", "admin:AUJUl1K2xgeqwMdZ3XlEFc1QhgEQItODMNzJwQme", loadBalancerIP+"/api/admin/stats")
+			stdout, stderr, err := ExecAt(boot0, "curl", "-u", "admin:AUJUl1K2xgeqwMdZ3XlEFc1QhgEQItODMNzJwQme", loadBalancerIP+":"+exposedPort+"/api/admin/stats")
 			if err != nil {
 				return fmt.Errorf("unable to get admin stats, stderr: %s, err: %v", stderr, err)
 			}
@@ -279,7 +281,7 @@ func testGrafanaOperator() {
 
 		By("confirming all dashboards are successfully registered")
 		Eventually(func() error {
-			stdout, stderr, err := ExecAt(boot0, "curl", "-u", "admin:AUJUl1K2xgeqwMdZ3XlEFc1QhgEQItODMNzJwQme", loadBalancerIP+"/api/search?type=dash-db")
+			stdout, stderr, err := ExecAt(boot0, "curl", "-u", "admin:AUJUl1K2xgeqwMdZ3XlEFc1QhgEQItODMNzJwQme", loadBalancerIP+":"+exposedPort+"/api/search?type=dash-db")
 			if err != nil {
 				return fmt.Errorf("unable to get dashboards, stderr: %s, err: %v", stderr, err)
 			}
