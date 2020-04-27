@@ -198,14 +198,14 @@ spec:
         livenessProbe:
           httpGet:
             path: /
-            port: 8003
+            port: 8502
           initialDelaySeconds: 3
           periodSeconds: 3
           failureThreshold: 6
         readinessProbe:
           httpGet:
             path: /
-            port: 8003
+            port: 8502
           initialDelaySeconds: 3
           periodSeconds: 3
         volumeMounts:
@@ -216,7 +216,7 @@ spec:
       - name: liveness-probe
         image: quay.io/cybozu/envoy:1.13.1.2
         command:
-          - /livenessprobe
+          - /usr/local/bin/livenessprobe
       initContainers:
       - args:
         - bootstrap
