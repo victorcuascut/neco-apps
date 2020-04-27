@@ -357,6 +357,7 @@ func TestValidation(t *testing.T) {
 
 	t.Run("ApplicationTargetRevision", testApplicationTargetRevision)
 	t.Run("CRDStatus", testCRDStatus)
-	t.Run("GeneratedSecretName", testGeneratedSecretName)
+	// TODO: uncomment testGeneratedSecretName in PR which has come to use all secrets again
+	// t.Run("GeneratedSecretName", testGeneratedSecretName)
 	t.Run("AlertRules", testAlertRules)
 }
