@@ -99,7 +99,7 @@ type OrderStatus struct {
 	FinalizeURL string `json:"finalizeURL,omitempty"`
 
 	// Authorizations contains data returned from the ACME server on what
-	// authoriations must be completed in order to validate the DNS names
+	// authorizations must be completed in order to validate the DNS names
 	// specified on the Order.
 	// +optional
 	Authorizations []ACMEAuthorization `json:"authorizations,omitempty"`
@@ -144,7 +144,7 @@ type ACMEAuthorization struct {
 	// For example, if '*.example.com' is the DNS name being validated, this
 	// field will be 'true' and the 'identifier' field will be 'example.com'.
 	// +optional
-	Wildcard bool `json:"wildcard,omitempty"`
+	Wildcard *bool `json:"wildcard,omitempty"`
 
 	// Challenges specifies the challenge types offered by the ACME server.
 	// One of these challenge types will be selected when validating the DNS
