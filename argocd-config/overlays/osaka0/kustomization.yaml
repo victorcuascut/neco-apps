@@ -1,6 +1,6 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
-bases:
+resources:
 - ../../base
 patchesStrategicMerge:
 - argocd-ingress.yaml
@@ -11,4 +11,5 @@ patchesStrategicMerge:
 - maneki-apps.yaml
 - metallb.yaml
 - monitoring.yaml
+- secrets.yaml
 - teleport.yaml

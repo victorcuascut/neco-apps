@@ -1,6 +1,7 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 resources:
+  - grafana-operator
   - machines-endpoints/cronjob.yaml
   - machines-endpoints/role.yaml
   - machines-endpoints/rolebinding.yaml
@@ -16,9 +17,6 @@ resources:
   - prometheus/service.yaml
   - prometheus/serviceaccount.yaml
   - prometheus/statefulset.yaml
-  - grafana/service.yaml
-  - grafana/statefulset.yaml
-  - grafana/configmap.yaml
   - alertmanager/deployment.yaml
   - alertmanager/service.yaml
 configMapGenerator:
@@ -43,62 +41,6 @@ configMapGenerator:
       - prometheus/alert_rules/sabakan.yaml
       - prometheus/alert_rules/teleport.yaml
       - prometheus/alert_rules/topolvm.yaml
-
   - name: alertmanager
     files:
       - alertmanager/neco.template
-  - name: dashboard-argocd
-    files:
-      - grafana/dashboards/argocd.json
-  - name: dashboard-calico
-    files:
-      - grafana/dashboards/calico.json
-  - name: dashboard-cert-manager
-    files:
-      - grafana/dashboards/cert-manager.json
-  - name: dashboard-contour
-    files:
-      - grafana/dashboards/contour.json
-      - grafana/dashboards/envoy.json
-  - name: dashboard-etcd
-    files:
-      - grafana/dashboards/etcd.json
-  - name: dashboard-kube-apiserver
-    files:
-      - grafana/dashboards/kube-apiserver.json
-  - name: dashboard-kube-controller-manager
-    files:
-      - grafana/dashboards/kube-controller-manager.json
-  - name: dashboard-kube-scheduler
-    files:
-      - grafana/dashboards/kube-scheduler.json
-  - name: dashboard-kubelet
-    files:
-      - grafana/dashboards/kubelet.json
-  - name: dashboard-kubernetes-cluster
-    files:
-      - grafana/dashboards/kubernetes_cluster.json
-  - name: dashboard-kubernetes-persistence-volumes
-    files:
-      - grafana/dashboards/kubernetes-persistence-volumes.json
-  - name: dashboard-memory-usage
-    files:
-      - grafana/dashboards/memory_usage.json
-  - name: dashboard-cpu-usage
-    files:
-      - grafana/dashboards/cpu_usage.json
-  - name: dashboard-topolvm-volumegroup
-    files:
-      - grafana/dashboards/topolvm_volumegroup.json
-  - name: dashboard-local-pv-provisioner
-    files:
-      - grafana/dashboards/local-pv-provisioner.json
-  - name: dashboard-sabakan
-    files:
-      - grafana/dashboards/sabakan.json
-  - name: dashboard-all-nodes
-    files:
-      - grafana/dashboards/all_nodes.json
-  - name: dashboard-neco-admission
-    files:
-      - grafana/dashboards/neco-admission.json

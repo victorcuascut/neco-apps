@@ -1,0 +1,27 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: grafana-operator
+spec:
+  template:
+    spec:
+      containers:
+        - name: grafana-operator
+          image: quay.io/cybozu/grafana-operator:3.2.0.1
+          args:
+            - --grafana-image=quay.io/cybozu/grafana
+            - --grafana-image-tag=6.7.3.1
+            - --scan-all
+          env:
+            - name: NO_PROXY
+              value: 10.0.0.0/8
+            - name: HTTP_PROXY
+              value: http://squid.internet-egress.svc:3128
+            - name: HTTPS_PROXY
+              value: http://squid.internet-egress.svc:3128
+          volumeMounts:
+            - name: tmp
+              mountPath: /tmp
+      volumes:
+      - name: tmp
+        emptyDir: {}

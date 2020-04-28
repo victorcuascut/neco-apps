@@ -21,11 +21,9 @@ var (
 )
 
 func init() {
-	num, err := strconv.Atoi(os.Getenv("NUM_DASHBOARD"))
+	var err error
+	numGrafanaDashboard, err = strconv.Atoi(os.Getenv("NUM_DASHBOARD"))
 	if err != nil {
 		panic(err)
 	}
-	// NOTE: (the count of dashboard) = (the count of files in ../monitoring/base/grafana/dashboards) + 1
-	// +1 comes from node-exporter-full dashboard, which downloaded by init-container
-	numGrafanaDashboard = num + 1
 }

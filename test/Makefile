@@ -9,7 +9,8 @@ BASE_BRANCH = master
 COMMIT_ID = $(shell git rev-parse --abbrev-ref HEAD)
 KUSTOMIZATION_DIRS := $(shell find ../ -name "kustomization.yaml" -exec dirname {} \;)
 SUDO = sudo
-NUM_DASHBOARD = $(shell ls ../monitoring/base/grafana/dashboards/ | wc -l)
+NUM_DASHBOARD = $(shell KUSTOMIZE_ENABLE_ALPHA_COMMANDS=true kustomize config count ../monitoring/base/grafana-operator/dashboards | \
+	grep GrafanaDashboard | cut -d' ' -f2)
 export BOOT0 BOOT1 BOOT2 GINKGO SSH_PRIVKEY TEST_ID COMMIT_ID KUSTOMIZATION_DIRS BOOTSTRAP NUM_DASHBOARD
 
 ### for Go
@@ -18,7 +19,7 @@ export GOFLAGS
 
 # Follow Argo CD installed kustomize version
 # https://github.com/cybozu/neco-containers/blob/master/argocd/Dockerfile#L32
-KUSTOMIZE_VERSION = 3.2.0
+KUSTOMIZE_VERSION = 3.5.3
 PROMTOOL_VERSION := 2.12.0
 TELEPORT_VERSION := 4.2.8
 KUBERNETES_VERSION = 1.17.4
@@ -56,8 +57,8 @@ setup:
 	$(SUDO) mv kubectl /usr/local/bin/kubectl
 	chmod +x /usr/local/bin/kubectl
 	$(SUDO) bash -c "kubectl completion bash > /etc/bash_completion.d/kubectl"
-	curl -sSLf -O https://github.com/kubernetes-sigs/kustomize/releases/download/v$(KUSTOMIZE_VERSION)/kustomize_$(KUSTOMIZE_VERSION)_linux_amd64
-	$(SUDO) mv kustomize_$(KUSTOMIZE_VERSION)_linux_amd64 /usr/local/bin/kustomize
+	curl -sSLf https://github.com/kubernetes-sigs/kustomize/releases/download/kustomize%2Fv${KUSTOMIZE_VERSION}/kustomize_v${KUSTOMIZE_VERSION}_linux_amd64.tar.gz | tar zxf - -C /tmp
+	$(SUDO) mv /tmp/kustomize /usr/local/bin/kustomize
 	chmod +x /usr/local/bin/kustomize
 	go install github.com/onsi/ginkgo/ginkgo
 	curl -sSLf https://github.com/prometheus/prometheus/releases/download/v$(PROMTOOL_VERSION)/prometheus-$(PROMTOOL_VERSION).linux-amd64.tar.gz | tar -xzvf - --strip-components=1 prometheus-$(PROMTOOL_VERSION).linux-amd64/promtool
