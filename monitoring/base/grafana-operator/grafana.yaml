@@ -1,0 +1,45 @@
+apiVersion: integreatly.org/v1alpha1
+kind: Grafana
+metadata:
+  name: grafana
+spec:
+  service:
+    type: ClusterIP
+  deployment:
+    envFrom:
+      - configMapRef:
+          name: https-proxy
+      - secretRef:
+          name: github-auth-20200423
+    securityContext:
+      runAsUser: 10000
+  config:
+    log:
+      mode: "console"
+      level: "warn"
+    auth:
+      disable_login_form: false
+      disable_signout_menu: true
+    auth.anonymous:
+      enabled: false
+    auth.github:
+      enabled: true
+      allow_sign_up: true
+      scopes: user:email,read:org
+      auth_url: https://github.com/login/oauth/authorize
+      token_url: https://github.com/login/oauth/access_token
+      api_url: https://api.github.com/user
+      allowed_organizations: cybozu-private
+    server:
+      domain: grafana.monitoring.gcp0.dev-ne.co
+      root_url: https://grafana.monitoring.gcp0.dev-ne.co
+    analytics:
+      check_for_updates: true
+    grafana_net:
+      url: https://grafana.monitoring.svc.cluster.local
+    users:
+      viewers_can_edit: true
+      auto_assign_org_role: Viewer
+  dashboardLabelSelector:
+    - matchExpressions:
+        - {key: app.kubernetes.io/name, operator: In, values: [grafana]}
