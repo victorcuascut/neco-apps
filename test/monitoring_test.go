@@ -9,6 +9,7 @@ import (
 	"path/filepath"
 	"reflect"
 	"sort"
+	"strconv"
 	"strings"
 
 	. "github.com/onsi/ginkgo"
@@ -224,22 +225,22 @@ func testAlertmanager() {
 	})
 }
 
-func testGrafana() {
+func testGrafanaOperator() {
 	It("should be deployed successfully", func() {
 		Eventually(func() error {
 			stdout, _, err := ExecAt(boot0, "kubectl", "--namespace=monitoring",
-				"get", "statefulset/grafana", "-o=json")
+				"get", "deployment/grafana-deployment", "-o=json")
 			if err != nil {
 				return err
 			}
-			statefulSet := new(appsv1.StatefulSet)
-			err = json.Unmarshal(stdout, statefulSet)
+			deployment := new(appsv1.Deployment)
+			err = json.Unmarshal(stdout, deployment)
 			if err != nil {
 				return err
 			}
 
-			if int(statefulSet.Status.ReadyReplicas) != 1 {
-				return fmt.Errorf("ReadyReplicas is not 1: %d", int(statefulSet.Status.ReadyReplicas))
+			if int(deployment.Status.ReadyReplicas) != 1 {
+				return fmt.Errorf("ReadyReplicas is not 1: %d", int(deployment.Status.ReadyReplicas))
 			}
 			return nil
 		}).Should(Succeed())
@@ -247,16 +248,17 @@ func testGrafana() {
 
 	It("should have data sources and dashboards", func() {
 		By("getting external IP of grafana service")
-		stdout, stderr, err := ExecAt(boot0, "kubectl", "--namespace=monitoring", "get", "services", "grafana", "-o=json")
+		stdout, stderr, err := ExecAt(boot0, "kubectl", "--namespace=monitoring", "get", "services", "grafana-service", "-o=json")
 		Expect(err).NotTo(HaveOccurred(), "stdout: %s, stderr: %s, err: %v", stdout, stderr, err)
 		service := new(corev1.Service)
 		err = json.Unmarshal(stdout, service)
 		Expect(err).NotTo(HaveOccurred())
 		loadBalancerIP := service.Status.LoadBalancer.Ingress[0].IP
+		exposedPort := strconv.Itoa(int(service.Spec.Ports[0].Port))
 
 		By("getting admin stats from grafana")
 		Eventually(func() error {
-			stdout, stderr, err := ExecAt(boot0, "curl", "-u", "admin:AUJUl1K2xgeqwMdZ3XlEFc1QhgEQItODMNzJwQme", loadBalancerIP+"/api/admin/stats")
+			stdout, stderr, err := ExecAt(boot0, "curl", "-u", "admin:AUJUl1K2xgeqwMdZ3XlEFc1QhgEQItODMNzJwQme", loadBalancerIP+":"+exposedPort+"/api/admin/stats")
 			if err != nil {
 				return fmt.Errorf("unable to get admin stats, stderr: %s, err: %v", stderr, err)
 			}
@@ -279,7 +281,7 @@ func testGrafana() {
 
 		By("confirming all dashboards are successfully registered")
 		Eventually(func() error {
-			stdout, stderr, err := ExecAt(boot0, "curl", "-u", "admin:AUJUl1K2xgeqwMdZ3XlEFc1QhgEQItODMNzJwQme", loadBalancerIP+"/api/search?type=dash-db")
+			stdout, stderr, err := ExecAt(boot0, "curl", "-u", "admin:AUJUl1K2xgeqwMdZ3XlEFc1QhgEQItODMNzJwQme", loadBalancerIP+":"+exposedPort+"/api/search?type=dash-db")
 			if err != nil {
 				return fmt.Errorf("unable to get dashboards, stderr: %s, err: %v", stderr, err)
 			}
@@ -291,8 +293,7 @@ func testGrafana() {
 				return err
 			}
 
-			// NOTE: expectedNum is the number of JSON files under monitoring/base/grafana/dashboards + 1(Node Exporter Full).
-			// Node Exporter Full is downloaded every time from the Internet because too large to store into configMap.
+			// NOTE: expectedNum is the number of files under monitoring/base/grafana/dashboards
 			if len(dashboards) != numGrafanaDashboard {
 				return fmt.Errorf("len(dashboards) should be %d: %d", numGrafanaDashboard, len(dashboards))
 			}
