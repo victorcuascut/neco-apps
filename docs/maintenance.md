@@ -97,8 +97,8 @@ $ cp deploy/1.8+/*.yaml $GOPATH/src/github.com/cybozu-go/neco-apps/metrics-serve
 
 ### prometheus, alertmanager, grafana
 
-There is no official kubernetes manifests for prometheus.
-So, check changes in release notes on github for both prometheus and alertmanager and make necessary actions.
+There is no official kubernetes manifests for prometheus, alertmanager, and grafana.
+So, check changes in release notes on github and take necessary actions.
 
 ### machines-endpoints
 
