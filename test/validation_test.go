@@ -209,66 +209,85 @@ func readSecret(path string) ([]corev1.Secret, error) {
 }
 
 func testGeneratedSecretName(t *testing.T) {
-	const (
-		expectedSecretFile = "./expected-secret.yaml"
-		currentSecretFile  = "./current-secret.yaml"
-	)
+	const currentSecretFile = "./current-secret.yaml"
+	expectedSecretFiles := []string{
+		"./expected-secret-osaka0.yaml",
+		"./expected-secret-stage0.yaml",
+		"./expected-secret-tokyo0.yaml",
+	}
 
 	t.Parallel()
 
 	defer func() {
-		os.Remove(expectedSecretFile)
+		for _, f := range expectedSecretFiles {
+			os.Remove(f)
+		}
 		os.Remove(currentSecretFile)
 	}()
 
-	expected, err := readSecret(expectedSecretFile)
-	if err != nil {
-		t.Fatal(err)
-	}
 	dummySecrets, err := readSecret(currentSecretFile)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-OUTER:
-	for _, es := range expected {
-		var appeared bool
-		err = filepath.Walk(manifestDir, func(path string, info os.FileInfo, err error) error {
+	for _, f := range expectedSecretFiles {
+		expected, err := readSecret(f)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+	OUTER:
+		for _, es := range expected {
+			var appeared bool
+			err = filepath.Walk(manifestDir, func(path string, info os.FileInfo, err error) error {
+				if err != nil {
+					return err
+				}
+				for _, exDir := range excludeDirs {
+					if strings.HasPrefix(path, exDir) {
+						// Skip files in the directory
+						return filepath.SkipDir
+					}
+				}
+				if info.IsDir() || !strings.HasSuffix(path, ".yaml") {
+					return nil
+				}
+				str, err := ioutil.ReadFile(path)
+				if err != nil {
+					return err
+				}
+
+				// These lines test all secrets to be used.
+				// grafana-admin-credentials is skipped because it is used internally in Grafana Operator.
+				if es.Name == "grafana-admin-credentials" {
+					appeared = true
+				}
+				if strings.Contains(string(str), "secretName: "+es.Name) {
+					appeared = true
+				}
+				// These lines test secrets to be used as references, such like:
+				// - secretRef:
+				//     name: <key>
+				strCondensed := strings.Join(strings.Fields(string(str)), "")
+				if strings.Contains(strCondensed, "secretRef:name:"+es.Name) {
+					appeared = true
+				}
+				return nil
+			})
 			if err != nil {
-				return err
+				t.Fatal("failed to walk manifest directories")
 			}
-			for _, exDir := range excludeDirs {
-				if strings.HasPrefix(path, exDir) {
-					// Skip files in the directory
-					return filepath.SkipDir
+			if !appeared {
+				t.Error("secret:", es.Name, "was not found in any manifests")
+			}
+
+			for _, cs := range dummySecrets {
+				if cs.Name == es.Name && cs.Namespace == es.Namespace {
+					continue OUTER
 				}
 			}
-			if info.IsDir() || !strings.HasSuffix(path, ".yaml") {
-				return nil
-			}
-			str, err := ioutil.ReadFile(path)
-			if err != nil {
-				return err
-			}
-
-			if strings.Contains(string(str), "secretName: "+es.Name) {
-				appeared = true
-			}
-			return nil
-		})
-		if err != nil {
-			t.Fatal("failed to walk manifest directories")
+			t.Error("secret:", es.Namespace+"/"+es.Name, "was not found in dummy secrets")
 		}
-		if !appeared {
-			t.Error("secret:", es.Name, "was not found in any manifests")
-		}
-
-		for _, cs := range dummySecrets {
-			if cs.Name == es.Name && cs.Namespace == es.Namespace {
-				continue OUTER
-			}
-		}
-		t.Error("secret:", es.Namespace+"/"+es.Name, "was not found in dummy secrets")
 	}
 }
 
@@ -357,7 +376,6 @@ func TestValidation(t *testing.T) {
 
 	t.Run("ApplicationTargetRevision", testApplicationTargetRevision)
 	t.Run("CRDStatus", testCRDStatus)
-	// TODO: uncomment testGeneratedSecretName in PR which has come to use all secrets again
-	// t.Run("GeneratedSecretName", testGeneratedSecretName)
+	t.Run("GeneratedSecretName", testGeneratedSecretName)
 	t.Run("AlertRules", testAlertRules)
 }

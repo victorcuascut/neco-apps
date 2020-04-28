@@ -24,20 +24,6 @@ import (
 const (
 	argoCDPasswordFile = "./argocd-password.txt"
 
-	grafanaSecret = `apiVersion: v1
-kind: Secret
-metadata:
-  labels:
-    app.kubernetes.io/name: grafana
-  name: grafana
-  namespace: monitoring
-type: Opaque
-data:
-  admin-password: QVVKVWwxSzJ4Z2Vxd01kWjNYbEVGYzFRaGdFUUl0T0RNTnpKd1FtZQ==
-  admin-user: YWRtaW4=
-  ldap-toml: ""
-`
-
 	teleportSecret = `
 apiVersion: v1
 kind: Secret
@@ -146,18 +132,9 @@ func testSetup() {
 		})
 
 		It("should prepare secrets", func() {
-			By("creating namespace and secrets for grafana")
-			_, _, err := ExecAt(boot0, "kubectl", "get", "namespace", "monitoring")
-			if err != nil {
-				ExecSafeAt(boot0, "kubectl", "create", "namespace", "monitoring")
-			}
-			stdout, stderr, err := ExecAtWithInput(boot0, []byte(grafanaSecret), "dd", "of=grafana.yaml")
-			Expect(err).NotTo(HaveOccurred(), "stdout: %s, stderr: %s", stdout, stderr)
-			ExecSafeAt(boot0, "kubectl", "apply", "-f", "grafana.yaml")
-
 			if !withKind {
 				By("creating namespace and secrets for teleport")
-				stdout, stderr, err = ExecAt(boot0, "env", "ETCDCTL_API=3", "etcdctl", "--cert=/etc/etcd/backup.crt", "--key=/etc/etcd/backup.key",
+				stdout, stderr, err := ExecAt(boot0, "env", "ETCDCTL_API=3", "etcdctl", "--cert=/etc/etcd/backup.crt", "--key=/etc/etcd/backup.key",
 					"get", "--print-value-only", "/neco/teleport/auth-token")
 				Expect(err).NotTo(HaveOccurred(), "stdout: %s, stderr: %s", stdout, stderr)
 				teleportToken := strings.TrimSpace(string(stdout))
@@ -169,7 +146,7 @@ func testSetup() {
 					Token: teleportToken,
 				})
 				Expect(err).NotTo(HaveOccurred())
-				_, _, err := ExecAt(boot0, "kubectl", "get", "namespace", "teleport")
+				_, _, err = ExecAt(boot0, "kubectl", "get", "namespace", "teleport")
 				if err != nil {
 					ExecSafeAt(boot0, "kubectl", "create", "namespace", "teleport")
 				}
