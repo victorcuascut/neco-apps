@@ -19,7 +19,6 @@ package v1alpha2
 import (
 	corev1 "k8s.io/api/core/v1"
 	apiext "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	cmmeta "github.com/jetstack/cert-manager/pkg/apis/meta/v1"
 )
@@ -37,6 +36,11 @@ type ACMEIssuer struct {
 	// +optional
 	SkipTLSVerify bool `json:"skipTLSVerify,omitempty"`
 
+	// ExternalAccountBinding is a reference to a CA external account of the ACME
+	// server.
+	// +optional
+	ExternalAccountBinding *ACMEExternalAccountBinding `json:"externalAccountBinding,omitempty"`
+
 	// PrivateKey is the name of a secret containing the private key for this
 	// user account.
 	PrivateKey cmmeta.SecretKeySelector `json:"privateKeySecretRef"`
@@ -46,6 +50,36 @@ type ACMEIssuer struct {
 	// +optional
 	Solvers []ACMEChallengeSolver `json:"solvers,omitempty"`
 }
+
+// ACMEExternalAccountBinding is a reference to a CA external account of the ACME
+// server.
+type ACMEExternalAccountBinding struct {
+	// keyID is the ID of the CA key that the External Account is bound to.
+	KeyID string `json:"keyID"`
+
+	// keySecretRef is a Secret Key Selector referencing a data item in a Kubernetes
+	// Secret which holds the symmetric MAC key of the External Account Binding.
+	// The `key` is the index string that is paired with the key data in the
+	// Secret and should not be confused with the key data itself, or indeed with
+	// the External Account Binding keyID above.
+	// The secret key stored in the Secret **must** be un-padded, base64 URL
+	// encoded data.
+	Key cmmeta.SecretKeySelector `json:"keySecretRef"`
+
+	// keyAlgorithm is the MAC key algorithm that the key is used for. Valid
+	// values are "HS256", "HS384" and "HS512".
+	KeyAlgorithm HMACKeyAlgorithm `json:"keyAlgorithm"`
+}
+
+// HMACKeyAlgorithm is the name of a key algorithm used for HMAC encryption
+// +kubebuilder:validation:Enum=HS256;HS384;HS512
+type HMACKeyAlgorithm string
+
+const (
+	HS256 HMACKeyAlgorithm = "HS256"
+	HS384 HMACKeyAlgorithm = "HS384"
+	HS512 HMACKeyAlgorithm = "HS512"
+)
 
 type ACMEChallengeSolver struct {
 	// Selector selects a set of DNSNames on the Certificate resource that
@@ -137,13 +171,21 @@ type ACMEChallengeSolverHTTP01IngressPodTemplate struct {
 	// If labels or annotations overlap with in-built values, the values here
 	// will override the in-built values.
 	// +optional
-	metav1.ObjectMeta `json:"metadata,omitempty"`
+	ACMEChallengeSolverHTTP01IngressPodObjectMeta `json:"metadata,omitempty"`
 
 	// PodSpec defines overrides for the HTTP01 challenge solver pod.
 	// Only the 'nodeSelector', 'affinity' and 'tolerations' fields are
 	// supported currently. All other fields will be ignored.
 	// +optional
 	Spec ACMEChallengeSolverHTTP01IngressPodSpec `json:"spec,omitempty"`
+}
+
+type ACMEChallengeSolverHTTP01IngressPodObjectMeta struct {
+	// Annotations that should be added to the create ACME HTTP01 solver pods.
+	Annotations map[string]string `json:"annotations,omitempty"`
+
+	// Labels that should be added to the created ACME HTTP01 solver pods.
+	Labels map[string]string `json:"labels,omitempty"`
 }
 
 type ACMEChallengeSolverHTTP01IngressPodSpec struct {
@@ -227,15 +269,17 @@ type ACMEIssuerDNS01ProviderAkamai struct {
 // ACMEIssuerDNS01ProviderCloudDNS is a structure containing the DNS
 // configuration for Google Cloud DNS
 type ACMEIssuerDNS01ProviderCloudDNS struct {
-	ServiceAccount cmmeta.SecretKeySelector `json:"serviceAccountSecretRef"`
-	Project        string                   `json:"project"`
+	// +optional
+	ServiceAccount *cmmeta.SecretKeySelector `json:"serviceAccountSecretRef,omitempty"`
+	Project        string                    `json:"project"`
 }
 
 // ACMEIssuerDNS01ProviderCloudflare is a structure containing the DNS
 // configuration for Cloudflare
 type ACMEIssuerDNS01ProviderCloudflare struct {
-	Email  string                   `json:"email"`
-	APIKey cmmeta.SecretKeySelector `json:"apiKeySecretRef"`
+	Email    string                    `json:"email"`
+	APIKey   *cmmeta.SecretKeySelector `json:"apiKeySecretRef,omitempty"`
+	APIToken *cmmeta.SecretKeySelector `json:"apiTokenSecretRef,omitempty"`
 }
 
 // ACMEIssuerDNS01ProviderDigitalOcean is a structure containing the DNS
