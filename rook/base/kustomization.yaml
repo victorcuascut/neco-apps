@@ -7,5 +7,5 @@ resources:
   - ceph-for-cs/cluster.yaml
   - ceph-for-cs/rbac.yaml
   - ceph-for-ss/cephobjectstore.yaml
-  - ceph-for-ss/cluster.yaml
+  # - ceph-for-ss/cluster.yaml
   - ceph-for-ss/rbac.yaml

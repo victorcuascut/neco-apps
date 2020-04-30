@@ -20,7 +20,7 @@ spec:
       - name: pg_autoscaler
         enabled: true
   cephVersion:
-    image: ceph/ceph:v15.2.1
+    image: quay.io/cybozu/ceph:15.2.1.1
   dashboard:
     ssl: true
   storage:
