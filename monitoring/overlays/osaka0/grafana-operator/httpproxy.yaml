@@ -18,5 +18,5 @@ spec:
         response: 2m
         idle: 5m
       services:
-        - name: grafana
+        - name: grafana-service
           port: 80
