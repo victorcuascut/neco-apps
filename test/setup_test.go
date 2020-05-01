@@ -27,15 +27,15 @@ const (
 	sandboxGrafanaSecret = `apiVersion: v1
 kind: Secret
 metadata:
-	labels:
-	app.kubernetes.io/name: grafana
-	name: grafana
-	namespace: sandbox
+  labels:
+    app.kubernetes.io/name: grafana
+  name: grafana
+  namespace: sandbox
 type: Opaque
 data:
-	admin-password: QVVKVWwxSzJ4Z2Vxd01kWjNYbEVGYzFRaGdFUUl0T0RNTnpKd1FtZQ==
-	admin-user: YWRtaW4=
-	ldap-toml: ""
+  admin-password: QVVKVWwxSzJ4Z2Vxd01kWjNYbEVGYzFRaGdFUUl0T0RNTnpKd1FtZQ==
+  admin-user: YWRtaW4=
+  ldap-toml: ""
 `
 
 	teleportSecret = `
