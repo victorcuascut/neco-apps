@@ -24,6 +24,20 @@ import (
 const (
 	argoCDPasswordFile = "./argocd-password.txt"
 
+	sandboxGrafanaSecret = `apiVersion: v1
+kind: Secret
+metadata:
+  labels:
+    app.kubernetes.io/name: grafana
+  name: grafana
+  namespace: sandbox
+type: Opaque
+data:
+  admin-password: QVVKVWwxSzJ4Z2Vxd01kWjNYbEVGYzFRaGdFUUl0T0RNTnpKd1FtZQ==
+  admin-user: YWRtaW4=
+  ldap-toml: ""
+`
+
 	teleportSecret = `
 apiVersion: v1
 kind: Secret
@@ -132,6 +146,15 @@ func testSetup() {
 		})
 
 		It("should prepare secrets", func() {
+			By("creating namespace and secrets for grafana")
+			_, _, err := ExecAt(boot0, "kubectl", "get", "namespace", "sandbox")
+			if err != nil {
+				ExecSafeAt(boot0, "kubectl", "create", "namespace", "sandbox")
+			}
+			stdout, stderr, err := ExecAtWithInput(boot0, []byte(sandboxGrafanaSecret), "dd", "of=sandbox-grafana.yaml")
+			Expect(err).NotTo(HaveOccurred(), "stdout: %s, stderr: %s", stdout, stderr)
+			ExecSafeAt(boot0, "kubectl", "apply", "-f", "sandbox-grafana.yaml")
+
 			if !withKind {
 				By("creating namespace and secrets for teleport")
 				stdout, stderr, err := ExecAt(boot0, "env", "ETCDCTL_API=3", "etcdctl", "--cert=/etc/etcd/backup.crt", "--key=/etc/etcd/backup.key",
