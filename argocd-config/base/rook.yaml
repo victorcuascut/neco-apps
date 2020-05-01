@@ -59,3 +59,19 @@ spec:
       name: rbd-external-provisioner-runner
       jsonPointers:
         - /rules
+    - group: ceph.rook.io
+      kind: CephCluster
+      name: ceph-for-cs
+      namespace: ceph-for-cs
+      jsonPointers:
+        - /spec/storage/storageClassDeviceSets/0/count
+        - /spec/storage/storageClassDeviceSets/0/placement/topologySpreadConstraints/0/maxSkew
+        - /spec/storage/storageClassDeviceSets/0/placement/topologySpreadConstraints/1/maxSkew
+    - group: ceph.rook.io
+      kind: CephCluster
+      name: ceph-for-ss
+      namespace: ceph-for-ss
+      jsonPointers:
+        - /spec/storage/storageClassDeviceSets/0/count
+        - /spec/storage/storageClassDeviceSets/0/placement/topologySpreadConstraints/0/maxSkew
+        - /spec/storage/storageClassDeviceSets/0/placement/topologySpreadConstraints/1/maxSkew
