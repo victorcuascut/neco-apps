@@ -125,6 +125,22 @@ $ curl -sLf -o network-policy/base/calico/upstream/calico-policy-only.yaml https
 Remove the resources related to `calico-kube-controllers` from `calico-policy-only.yaml` because we do not need to use `calico/kube-controllers`.
 See: [Kubernetes controllers configuration](https://docs.projectcalico.org/reference/resources/kubecontrollersconfig)
 
+## rook
+
+Download the upstream manifest as follows:
+
+```console
+$ curl -sLf -o rook/base/upstream/operator.yaml https://raw.githubusercontent.com/cybozu-go/rook/neco-release/cluster/examples/kubernetes/ceph/operator.yaml
+```
+
+Then check the diffs by `git diff`.
+
+TODO:  
+Following manifests can be retrieved from upstream, after [PR](https://github.com/rook/rook/pull/5240) is merged.
+- rook/base/upstream/common.yaml
+- rook/base/ceph-for-cs/rbac.yaml
+- rook/base/ceph-for-ss/rbac.yaml
+
 teleport
 --------
 
