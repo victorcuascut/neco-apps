@@ -4,11 +4,11 @@ rule_files:
 tests:
   - interval: 1m
     input_series:
-      - series: 'argocd_app_sync_status{exported_name="monitoring",sync_status="Synced",project="default"}'
+      - series: 'argocd_app_info{exported_name="monitoring",sync_status="Synced",project="default"}'
         values: 0+0x20
-      - series: 'argocd_app_sync_status{exported_name="metallb",sync_status="Synced",project="default"}'
+      - series: 'argocd_app_info{exported_name="metallb",sync_status="Synced",project="default"}'
         values: 0+0x20
-      - series: 'argocd_app_sync_status{exported_name="argocd",sync_status="Synced",project="default"}'
+      - series: 'argocd_app_info{exported_name="argocd",sync_status="Synced",project="default"}'
         values: '0+0x10 1+0x10'
     alert_rule_test:
       - eval_time: 20m
