@@ -57,29 +57,8 @@ func testSandboxGrafana() {
 			if adminStats.Datasources == 0 {
 				return fmt.Errorf("no data sources")
 			}
-			if adminStats.Dashboards == 0 {
-				return fmt.Errorf("no dashboards")
-			}
-			return nil
-		}).Should(Succeed())
-
-		By("confirming all dashboards are successfully registered")
-		Eventually(func() error {
-			stdout, stderr, err := ExecAt(boot0, "curl", "-u", "admin:AUJUl1K2xgeqwMdZ3XlEFc1QhgEQItODMNzJwQme", loadBalancerIP+":3000/api/search?type=dash-db")
-			if err != nil {
-				return fmt.Errorf("unable to get dashboards, stderr: %s, err: %v", stderr, err)
-			}
-			var dashboards []struct {
-				ID int `json:"id"`
-			}
-			err = json.Unmarshal(stdout, &dashboards)
-			if err != nil {
-				return err
-			}
-
-			// NOTE: node-exporter-full is currently not downloaded, so descrease the value by -1.
-			if len(dashboards) != numGrafanaDashboard-1 {
-				return fmt.Errorf("len(dashboards) should be %d: %d", numGrafanaDashboard, len(dashboards))
+			if adminStats.Dashboards != 0 {
+				return fmt.Errorf("%d dashboards exist", adminStats.Dashboards)
 			}
 			return nil
 		}).Should(Succeed())
