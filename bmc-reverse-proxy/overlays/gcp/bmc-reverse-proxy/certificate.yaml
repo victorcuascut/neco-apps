@@ -19,6 +19,10 @@ spec:
   issuerRef:
     name: bmc-reverse-proxy-selfsign
   commonName: "ca.bmc-reverse-proxy"
+  usages:
+    - digital signature
+    - key encipherment
+    - cert sign
   isCA: true
 ---
 apiVersion: cert-manager.io/v1alpha2
@@ -45,3 +49,8 @@ spec:
   commonName: "*.bmc.gcp0.dev-ne.co"
   dnsNames:
     - "*.bmc.gcp0.dev-ne.co"
+  usages:
+    - digital signature
+    - key encipherment
+    - server auth
+    - client auth

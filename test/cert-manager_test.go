@@ -58,6 +58,11 @@ spec:
   commonName: %s
   dnsNames:
     - %s
+  usages:
+    - digital signature
+    - key encipherment
+    - server auth
+    - client auth
 `, issuerName, domainName, domainName)
 		_, stderr, err := ExecAtWithInput(boot0, []byte(certificate), "kubectl", "apply", "-f", "-")
 		Expect(err).NotTo(HaveOccurred(), "stderr: %s", stderr)
