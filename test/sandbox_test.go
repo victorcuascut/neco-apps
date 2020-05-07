@@ -77,9 +77,8 @@ func testSandboxGrafana() {
 				return err
 			}
 
-			// NOTE: expectedNum is the number of JSON files under sandbox/overlays/gcp/grafana/dashboards + 1(Node Exporter Full).
-			// Node Exporter Full is downloaded every time from the Internet because too large to store into configMap.
-			if len(dashboards) != numGrafanaDashboard {
+			// NOTE: node-exporter-full is currently not downloaded, so descrease the value by -1.
+			if len(dashboards) != numGrafanaDashboard-1 {
 				return fmt.Errorf("len(dashboards) should be %d: %d", numGrafanaDashboard, len(dashboards))
 			}
 			return nil
