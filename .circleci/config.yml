@@ -202,7 +202,6 @@ jobs:
     steps:
       - checkout
       - boot-dctest:
-          neco-release-branch: false
           placemat-menu-file: menu-ss.yml
       - run:
           name: Test neco-apps
