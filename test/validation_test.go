@@ -10,6 +10,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"reflect"
 	"strings"
 	"testing"
 	"text/template"
@@ -121,6 +122,64 @@ type crdValidation struct {
 func testCRDStatus(t *testing.T) {
 	t.Parallel()
 
+	doCheckKustomizedYaml(t, func(t *testing.T, data []byte) {
+		var crd crdValidation
+		err := yaml.Unmarshal(data, &crd)
+		if err != nil {
+			// Skip because this YAML might not be custom resource definition
+			return
+		}
+
+		if crd.Kind != "CustomResourceDefinition" {
+			// Skip because this YAML is not custom resource definition
+			return
+		}
+		if crd.Status != nil {
+			t.Error(errors.New(".status(Status) exists in " + crd.Metadata.Name + ", remove it to prevent occurring OutOfSync by Argo CD"))
+		}
+	})
+}
+
+type certificateValidation struct {
+	Kind     string `json:"kind"`
+	Metadata struct {
+		Name string `json:"name"`
+	} `json:"metadata"`
+	Spec struct {
+		IsCA   bool     `json:"isCA"`
+		Usages []string `json:"usages"`
+	} `json:"spec"`
+}
+
+func testCertificateUsages(t *testing.T) {
+	t.Parallel()
+
+	doCheckKustomizedYaml(t, func(t *testing.T, data []byte) {
+		var cert certificateValidation
+		err := yaml.Unmarshal(data, &cert)
+		if err != nil {
+			// Skip because this YAML might not be certificate
+			return
+		}
+
+		if cert.Kind != "Certificate" {
+			// Skip because this YAML is not certificate
+			return
+		}
+
+		var expected []string
+		if cert.Spec.IsCA {
+			expected = []string{"digital signature", "key encipherment", "cert sign"}
+		} else {
+			expected = []string{"digital signature", "key encipherment", "server auth", "client auth"}
+		}
+		if !reflect.DeepEqual(cert.Spec.Usages, expected) {
+			t.Error(errors.New(".spec.usages has incorrect list in " + cert.Metadata.Name))
+		}
+	})
+}
+
+func doCheckKustomizedYaml(t *testing.T, checkFunc func(*testing.T, []byte)) {
 	targets := []string{}
 	err := filepath.Walk(manifestDir, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
@@ -162,20 +221,7 @@ func testCRDStatus(t *testing.T) {
 					t.Error(err)
 				}
 
-				var crd crdValidation
-				err = yaml.Unmarshal(data, &crd)
-				if err != nil {
-					// Skip because this YAML might not be custom resource definition
-					continue
-				}
-
-				if crd.Kind != "CustomResourceDefinition" {
-					// Skip because this YAML is not custom resource definition
-					continue
-				}
-				if crd.Status != nil {
-					t.Error(errors.New(".status(Status) exists in " + crd.Metadata.Name + ", remove it to prevent occurring OutOfSync by Argo CD"))
-				}
+				checkFunc(t, data)
 			}
 		})
 	}
@@ -376,6 +422,7 @@ func TestValidation(t *testing.T) {
 
 	t.Run("ApplicationTargetRevision", testApplicationTargetRevision)
 	t.Run("CRDStatus", testCRDStatus)
+	t.Run("CertificateUsages", testCertificateUsages)
 	t.Run("GeneratedSecretName", testGeneratedSecretName)
 	t.Run("AlertRules", testAlertRules)
 }

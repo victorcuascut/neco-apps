@@ -22,6 +22,10 @@ spec:
     name: teleport-proxy-selfsign
   commonName: "ca.proxy.teleport"
   isCA: true
+  usages:
+    - digital signature
+    - key encipherment
+    - cert sign
 ---
 apiVersion: cert-manager.io/v1alpha2
 kind: Issuer
@@ -49,3 +53,8 @@ spec:
   commonName: teleport.gcp0.dev-ne.co
   dnsNames:
     - teleport.gcp0.dev-ne.co
+  usages:
+    - digital signature
+    - key encipherment
+    - server auth
+    - client auth

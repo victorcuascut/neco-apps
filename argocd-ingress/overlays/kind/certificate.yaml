@@ -11,3 +11,8 @@ spec:
   commonName: argocd.kind.cybozu-ne.co
   dnsNames:
     - argocd.kind.cybozu-ne.co
+  usages:
+    - digital signature
+    - key encipherment
+    - server auth
+    - client auth
