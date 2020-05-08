@@ -14,7 +14,7 @@ require (
 	github.com/cybozu-go/log v1.5.0
 	github.com/cybozu-go/sabakan/v2 v2.4.2
 	github.com/google/go-cmp v0.3.1
-	github.com/jetstack/cert-manager v0.14.2
+	github.com/jetstack/cert-manager v0.14.3
 	github.com/kballard/go-shellquote v0.0.0-20180428030007-95032a82bc51 // indirect
 	github.com/onsi/ginkgo v1.11.0
 	github.com/onsi/gomega v1.8.1
