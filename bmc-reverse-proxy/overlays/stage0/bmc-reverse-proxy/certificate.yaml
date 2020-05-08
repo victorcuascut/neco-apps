@@ -10,3 +10,8 @@ spec:
   commonName: "*.bmc.stage0.cybozu-ne.co"
   dnsNames:
     - "*.bmc.stage0.cybozu-ne.co"
+  usages:
+    - digital signature
+    - key encipherment
+    - server auth
+    - client auth
