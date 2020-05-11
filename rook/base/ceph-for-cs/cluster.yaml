@@ -7,7 +7,6 @@ metadata:
     argocd.argoproj.io/sync-wave: "1"
 spec:
   dataDirHostPath: /var/lib/rook
-  failureDomain: zone
   mon:
     count: 3
     volumeClaimTemplate:

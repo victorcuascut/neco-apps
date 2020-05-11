@@ -7,11 +7,11 @@ metadata:
     argocd.argoproj.io/sync-wave: "2"
 spec:
   metadataPool:
-    failureDomain: host
+    failureDomain: zone
     replicated:
       size: 3
   dataPool:
-    failureDomain: host
+    failureDomain: zone
     replicated:
       size: 3
   preservePoolsOnDelete: true
