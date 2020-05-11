@@ -11,3 +11,8 @@ spec:
   commonName: argocd.osaka0.cybozu-ne.co
   dnsNames:
     - argocd.osaka0.cybozu-ne.co
+  usages:
+    - digital signature
+    - key encipherment
+    - server auth
+    - client auth
