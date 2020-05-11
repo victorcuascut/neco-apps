@@ -21,6 +21,10 @@ spec:
   issuerRef:
     name: argocd-server-selfsign
   commonName: "ca.server.argocd"
+  usages:
+    - digital signature
+    - key encipherment
+    - cert sign
   isCA: true
 ---
 apiVersion: cert-manager.io/v1alpha2
@@ -49,3 +53,8 @@ spec:
   commonName: argocd.gcp0.dev-ne.co
   dnsNames:
     - argocd.gcp0.dev-ne.co
+  usages:
+    - digital signature
+    - key encipherment
+    - server auth
+    - client auth

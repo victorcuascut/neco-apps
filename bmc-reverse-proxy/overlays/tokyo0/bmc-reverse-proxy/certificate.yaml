@@ -10,3 +10,8 @@ spec:
   commonName: "*.bmc.tokyo0.cybozu-ne.co"
   dnsNames:
     - "*.bmc.tokyo0.cybozu-ne.co"
+  usages:
+    - digital signature
+    - key encipherment
+    - server auth
+    - client auth
