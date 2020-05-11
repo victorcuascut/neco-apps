@@ -242,6 +242,7 @@ func applyAndWaitForApplications(overlay string) {
 	By("creating Argo CD app")
 	Eventually(func() error {
 		stdout, stderr, err := ExecAt(boot0, "argocd", "app", "create", "argocd-config",
+			"--upsert",
 			"--repo", "https://github.com/cybozu-go/neco-apps.git",
 			"--path", "argocd-config/overlays/"+overlay,
 			"--dest-namespace", "argocd",
