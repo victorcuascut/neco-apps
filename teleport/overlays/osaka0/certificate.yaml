@@ -11,3 +11,8 @@ spec:
   commonName: teleport.osaka0.cybozu-ne.co
   dnsNames:
     - teleport.osaka0.cybozu-ne.co
+  usages:
+    - digital signature
+    - key encipherment
+    - server auth
+    - client auth

@@ -30,6 +30,7 @@ spec:
   usages:
     - digital signature
     - key encipherment
+    - cert sign
 ---
 apiVersion: cert-manager.io/v1alpha2
 kind: Issuer
@@ -59,6 +60,8 @@ spec:
   usages:
     - digital signature
     - key encipherment
+    - server auth
+    - client auth
 ---
 apiVersion: cert-manager.io/v1alpha2
 kind: Certificate
@@ -79,3 +82,5 @@ spec:
   usages:
     - digital signature
     - key encipherment
+    - server auth
+    - client auth
