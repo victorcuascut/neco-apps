@@ -10,4 +10,4 @@ resources:
   - ceph-for-ss/cluster.yaml
   - ceph-for-ss/rbac.yaml
 patchesStrategicMerge:
-  - operator.yml
+  - operator.yaml
