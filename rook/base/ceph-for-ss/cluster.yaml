@@ -33,6 +33,7 @@ spec:
             spec:
               resources:
                 requests:
+                  # Local-storage provisioner allocates whole disk capacity, in spite of the storage request specified.
                   storage: 5Gi
               # IMPORTANT: Change the storage class depending on your environment (e.g. local-storage, gp2)
               storageClassName: local-storage
