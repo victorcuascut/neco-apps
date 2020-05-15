@@ -59,6 +59,7 @@ metadata:
 data:
   policy.csv: |
     p, cybozu-private:Neco, repositories, *, *, allow
+    p, cybozu-private:Neco, applications, *, *, allow
     p, cybozu-private:neco-readonly, projects, get, *, allow
     p, cybozu-private:neco-readonly, applications, get, *, allow
     p, cybozu-private:maneki, repositories, *, https://github.com/cybozu-private/maneki-apps.git, allow
