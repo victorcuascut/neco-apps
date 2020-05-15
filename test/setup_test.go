@@ -308,7 +308,15 @@ func applyAndWaitForApplications(overlay string) {
 	if err == nil {
 		By("removing ceph-related app and namespaces")
 		ExecSafeAt(boot0, "argocd", "app", "delete", "rook")
-		ExecSafeAt(boot0, "argocd", "app", "sync", "namespaces", "--prune")
+		Eventually(func() error {
+			_, _, err = ExecAt(boot0, "argocd", "app", "get", "rook")
+			return err
+		}).ShouldNot(Succeed())
+		Eventually(func() error {
+			ExecAt(boot0, "argocd", "app", "sync", "namespaces", "--prune")
+			_, _, err = ExecAt(boot0, "kubectl", "get", "ns", "rook-ceph")
+			return err
+		}).ShouldNot(Succeed())
 	}
 
 	By("waiting initialization")
