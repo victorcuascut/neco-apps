@@ -302,6 +302,15 @@ func applyAndWaitForApplications(overlay string) {
 		return nil
 	}).Should(Succeed())
 
+	// simulate removing ceph-related app and namespaces, due to PR revert
+	// TODO: remove this in next release
+	_, _, err = ExecAt(boot0, "argocd", "app", "get", "rook")
+	if err == nil {
+		By("removing ceph-related app and namespaces")
+		ExecSafeAt(boot0, "argocd", "app", "delete", "rook")
+		ExecSafeAt(boot0, "argocd", "app", "sync", "namespaces", "--prune")
+	}
+
 	By("waiting initialization")
 	checkAllAppsSynced := func() error {
 	OUTER:
