@@ -18,4 +18,3 @@ patchesStrategicMerge:
 - secrets.yaml
 - teleport.yaml
 - topolvm.yaml
-- rook.yaml
