@@ -242,6 +242,7 @@ func applyAndWaitForApplications(overlay string) {
 	By("creating Argo CD app")
 	Eventually(func() error {
 		stdout, stderr, err := ExecAt(boot0, "argocd", "app", "create", "argocd-config",
+			"--upsert",
 			"--repo", "https://github.com/cybozu-go/neco-apps.git",
 			"--path", "argocd-config/overlays/"+overlay,
 			"--dest-namespace", "argocd",
@@ -300,6 +301,23 @@ func applyAndWaitForApplications(overlay string) {
 		}
 		return nil
 	}).Should(Succeed())
+
+	// simulate removing ceph-related app and namespaces, due to PR revert
+	// TODO: remove this in next release
+	_, _, err = ExecAt(boot0, "argocd", "app", "get", "rook")
+	if err == nil {
+		By("removing ceph-related app and namespaces")
+		ExecSafeAt(boot0, "argocd", "app", "delete", "rook")
+		Eventually(func() error {
+			_, _, err = ExecAt(boot0, "argocd", "app", "get", "rook")
+			return err
+		}).ShouldNot(Succeed())
+		Eventually(func() error {
+			ExecAt(boot0, "argocd", "app", "sync", "namespaces", "--prune")
+			_, _, err = ExecAt(boot0, "kubectl", "get", "ns", "rook-ceph")
+			return err
+		}).ShouldNot(Succeed())
+	}
 
 	By("waiting initialization")
 	checkAllAppsSynced := func() error {
