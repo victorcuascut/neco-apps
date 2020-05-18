@@ -195,33 +195,9 @@ func testSetup() {
 		}
 		ExecSafeAt(boot0, "sed", "-i", "s/release/"+commitID+"/", "./neco-apps/argocd-config/base/*.yaml")
 		if withKind {
-			applyAndWaitForApplications("kind", commitID)
-		} else if doStorageTest {
-			ExecSafeAt(boot0, "ckecli", "sabakan", "enable")
-			ExecSafeAt(boot0, "ckecli", "constraints", "set", "minimum-workers", "4")
-			Eventually(func() error {
-				stdout, stderr, err := ExecAt(boot0, "kubectl", "get", "nodes", "-o", "json")
-				if err != nil {
-					return fmt.Errorf("stdout: %s, stderr: %s, err: %v", stdout, stderr, err)
-				}
-
-				var nl corev1.NodeList
-				err = json.Unmarshal(stdout, &nl)
-				if err != nil {
-					return err
-				}
-
-				// control-plane: 3, minimum-workers: 4
-				if len(nl.Items) != 7 {
-					return fmt.Errorf("too few nodes: %d", len(nl.Items))
-				}
-
-				return nil
-			}).Should(Succeed())
-			ExecSafeAt(boot0, "ckecli", "sabakan", "disable")
-			applyAndWaitForApplications("gcp-storage", commitID)
+			applyAndWaitForApplications("kind")
 		} else {
-			applyAndWaitForApplications("gcp", commitID)
+			applyAndWaitForApplications("gcp")
 		}
 	})
 
@@ -262,7 +238,7 @@ func testSetup() {
 	}
 }
 
-func applyAndWaitForApplications(overlay, commitID string) {
+func applyAndWaitForApplications(overlay string) {
 	By("creating Argo CD app")
 	Eventually(func() error {
 		stdout, stderr, err := ExecAt(boot0, "argocd", "app", "create", "argocd-config",
@@ -272,7 +248,7 @@ func applyAndWaitForApplications(overlay, commitID string) {
 			"--dest-namespace", "argocd",
 			"--dest-server", "https://kubernetes.default.svc",
 			"--sync-policy", "none",
-			"--revision", commitID)
+			"--revision", "release")
 		if err != nil {
 			return fmt.Errorf("stdout: %s, stderr: %s, err: %v", stdout, stderr, err)
 		}
@@ -325,6 +301,23 @@ func applyAndWaitForApplications(overlay, commitID string) {
 		}
 		return nil
 	}).Should(Succeed())
+
+	// simulate removing ceph-related app and namespaces, due to PR revert
+	// TODO: remove this in next release
+	_, _, err = ExecAt(boot0, "argocd", "app", "get", "rook")
+	if err == nil {
+		By("removing ceph-related app and namespaces")
+		ExecSafeAt(boot0, "argocd", "app", "delete", "rook")
+		Eventually(func() error {
+			_, _, err = ExecAt(boot0, "argocd", "app", "get", "rook")
+			return err
+		}).ShouldNot(Succeed())
+		Eventually(func() error {
+			ExecAt(boot0, "argocd", "app", "sync", "namespaces", "--prune")
+			_, _, err = ExecAt(boot0, "kubectl", "get", "ns", "rook-ceph")
+			return err
+		}).ShouldNot(Succeed())
+	}
 
 	By("waiting initialization")
 	checkAllAppsSynced := func() error {
