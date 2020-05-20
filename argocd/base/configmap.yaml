@@ -58,14 +58,8 @@ metadata:
   name: argocd-rbac-cm
 data:
   policy.csv: |
-    p, cybozu-private:Neco, repositories, *, *, allow
-    p, cybozu-private:Neco, applications, *, */*, allow
-    p, cybozu-private:Neco, certificates, *, *, allow
-    p, cybozu-private:Neco, clusters, *, *, allow
-    p, cybozu-private:Neco, projects, *, *, allow
-    p, cybozu-private:Neco, accounts, *, *, allow
-    p, cybozu-private:neco-readonly, projects, get, *, allow
-    p, cybozu-private:neco-readonly, applications, get, */*, allow
+    g, cybozu-private:Neco, role:admin
+    g, cybozu-private:neco-readonly, role:readonly
     p, cybozu-private:maneki, repositories, *, https://github.com/cybozu-private/maneki-apps.git, allow
     p, cybozu-private:maneki, clusters, get, *, allow
   # unauthenticated users cannot see the app, projects, etc...
