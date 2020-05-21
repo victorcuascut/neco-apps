@@ -12,9 +12,3 @@ spec:
   clusterResourceWhitelist:
   - group: '*'
     kind: '*'
-  roles:
-  - name: admin
-    groups:
-    - cybozu-private:Neco
-    policies:
-    - p, proj:default:admin, applications, *, default/*, allow
