@@ -193,6 +193,13 @@ func testSetup() {
 		if !doUpgrade {
 			setupArgoCD()
 		}
+		if doUpgrade {
+			// TODO: Delete this work around after merged this PR into master branch.
+			// Cleanup HTTPProxy to avoid this issue
+			// https://github.com/projectcontour/contour/issues/1051
+			Expect(stopAutoSync("argocd-ingress")).ShouldNot(HaveOccurred())
+			Expect(removeArgoCDIngressHTTPProxy()).ShouldNot(HaveOccurred())
+		}
 		ExecSafeAt(boot0, "sed", "-i", "s/release/"+commitID+"/", "./neco-apps/argocd-config/base/*.yaml")
 		if withKind {
 			applyAndWaitForApplications("kind")
@@ -236,6 +243,22 @@ func testSetup() {
 			ExecSafeAt(boot0, "neco", "init-data", "--ignitions-only")
 		})
 	}
+}
+
+func stopAutoSync(appName string) error {
+	stdout, stderr, err := ExecAt(boot0, "argocd", "app", "set", appName, "--sync-policy=none")
+	if err != nil {
+		return fmt.Errorf("unable to set --sync-policy=none. appName: %s, stdout: %s, stderr: %s, err: %v", appName, stdout, stderr, err)
+	}
+	return nil
+}
+
+func removeArgoCDIngressHTTPProxy() error {
+	stdout, stderr, err := ExecAt(boot0, "kubectl", "delete", "-n=argocd", "httpproxy", "argocd-server")
+	if err == nil {
+		return fmt.Errorf("unable to delete argocd-server httpproxy. stdout: %s, stderr: %s, err: %v", ns, stdout, stderr, err)
+	}
+	return nil
 }
 
 func applyAndWaitForApplications(overlay string) {
