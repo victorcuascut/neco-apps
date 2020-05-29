@@ -10,7 +10,7 @@ spec:
   virtualhost:
     fqdn: argocd.gcp0.dev-ne.co
     tls:
-      secretName: argocd-server-tls
+      secretName: argocd-server-cert
   routes:
     # For static files and Dex APIs
     - conditions:
