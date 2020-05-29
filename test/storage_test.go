@@ -8,6 +8,7 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	appsv1 "k8s.io/api/apps/v1"
+	corev1 "k8s.io/api/core/v1"
 )
 
 func testRookOperator() {
@@ -73,6 +74,33 @@ func testRookRGW() {
 			}
 			return nil
 		}).Should(Succeed())
+	})
+
+	It("should spread OSD PODs on ceph-for-ss", func() {
+		stdout, stderr, err := ExecAt(boot0, "kubectl", "--namespace=ceph-for-ss",
+			"get", "pod", "-l", "app=rook-ceph-osd", "-o=json")
+		Expect(err).ShouldNot(HaveOccurred(), "stdout=%s, stderr=%s", stdout, stderr)
+
+		pods := new(corev1.PodList)
+		err = json.Unmarshal(stdout, pods)
+		Expect(err).ShouldNot(HaveOccurred())
+		nodeCounts := make(map[string]int)
+		for _, pod := range pods.Items {
+			nodeCounts[pod.Spec.NodeName]++
+		}
+
+		stdout, stderr, err = ExecAt(boot0, "kubectl", "get", "node", "-l", "node-role.kubernetes.io/ss=true", "-o=json")
+		Expect(err).ShouldNot(HaveOccurred(), "stdout=%s, stderr=%s", stdout, stderr)
+
+		nodes := new(corev1.NodeList)
+		err = json.Unmarshal(stdout, nodes)
+		Expect(err).ShouldNot(HaveOccurred())
+		rackCounts := make(map[string]int)
+		for _, node := range nodes.Items {
+			rackCounts[node.Labels["topology.kubernetes.io/zone"]] += nodeCounts[node.Name]
+		}
+
+		// TODO check skew
 	})
 
 	It("should be used from a POD with a s3 client", func() {
