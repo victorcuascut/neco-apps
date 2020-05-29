@@ -1,0 +1,21 @@
+apiVersion: cert-manager.io/v1alpha3
+kind: Certificate
+metadata:
+  labels:
+    app.kubernetes.io/instance: argocd-ingress
+  name: argocd-server-tls
+  namespace: sandbox
+spec:
+  commonName: argocd.stage0.cybozu-ne.co
+  dnsNames:
+  - argocd.stage0.cybozu-ne.co
+  issuerRef:
+    kind: Issuer
+    name: clouddns-stage
+  secretName: argocd-server-tls
+  usages:
+  - digital signature
+  - key encipherment
+  - server auth
+  - client auth
+

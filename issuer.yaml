@@ -1,0 +1,24 @@
+apiVersion: cert-manager.io/v1alpha3
+kind: Issuer
+metadata:
+  namespace: sandbox
+  labels:
+    app.kubernetes.io/instance: cert-manager
+  name: clouddns-stage
+spec:
+  acme:
+    email: neco@cybozu.com
+    privateKeySecretRef:
+      name: letsencrypt-stage
+    server: https://acme-staging-v02.api.letsencrypt.org/directory
+    solvers:
+    - dns01:
+        clouddns:
+          project: cybozu-neco
+          serviceAccountSecretRef:
+            key: account.json
+            name: clouddns
+      selector:
+        dnsZones:
+        - stage0.cybozu-ne.co
+
