@@ -3,6 +3,7 @@ package test
 import (
 	"encoding/json"
 	"fmt"
+	"math"
 	"strings"
 
 	. "github.com/onsi/ginkgo"
@@ -77,30 +78,58 @@ func testRookRGW() {
 	})
 
 	It("should spread OSD PODs on ceph-for-ss", func() {
-		stdout, stderr, err := ExecAt(boot0, "kubectl", "--namespace=ceph-for-ss",
+		stdout, stderr, err := ExecAt(boot0, "kubectl", "get", "node", "-l", "node-role.kubernetes.io/ss=true", "-o=json")
+		Expect(err).ShouldNot(HaveOccurred(), "stdout=%s, stderr=%s", stdout, stderr)
+
+		nodes := new(corev1.NodeList)
+		err = json.Unmarshal(stdout, nodes)
+		Expect(err).ShouldNot(HaveOccurred())
+
+		nodeCounts := make(map[string]int)
+		for _, node := range nodes.Items {
+			nodeCounts[node.Name] = 0
+		}
+
+		stdout, stderr, err = ExecAt(boot0, "kubectl", "--namespace=ceph-for-ss",
 			"get", "pod", "-l", "app=rook-ceph-osd", "-o=json")
 		Expect(err).ShouldNot(HaveOccurred(), "stdout=%s, stderr=%s", stdout, stderr)
 
 		pods := new(corev1.PodList)
 		err = json.Unmarshal(stdout, pods)
 		Expect(err).ShouldNot(HaveOccurred())
-		nodeCounts := make(map[string]int)
+
 		for _, pod := range pods.Items {
 			nodeCounts[pod.Spec.NodeName]++
 		}
 
-		stdout, stderr, err = ExecAt(boot0, "kubectl", "get", "node", "-l", "node-role.kubernetes.io/ss=true", "-o=json")
-		Expect(err).ShouldNot(HaveOccurred(), "stdout=%s, stderr=%s", stdout, stderr)
+		var min int = math.MaxInt32
+		var max int
+		for _, v := range nodeCounts {
+			if v < min {
+				min = v
+			}
+			if v > max {
+				max = v
+			}
+		}
+		Expect(max-min).Should(BeNumerically("<=", 1), "nodeCounts=%v", nodeCounts)
 
-		nodes := new(corev1.NodeList)
-		err = json.Unmarshal(stdout, nodes)
-		Expect(err).ShouldNot(HaveOccurred())
 		rackCounts := make(map[string]int)
 		for _, node := range nodes.Items {
 			rackCounts[node.Labels["topology.kubernetes.io/zone"]] += nodeCounts[node.Name]
 		}
 
-		// TODO check skew
+		min = math.MaxInt32
+		max = 0
+		for _, v := range rackCounts {
+			if v < min {
+				min = v
+			}
+			if v > max {
+				max = v
+			}
+		}
+		Expect(max-min).Should(BeNumerically("<=", 1), "rackCounts=%v", rackCounts)
 	})
 
 	It("should be used from a POD with a s3 client", func() {
@@ -203,6 +232,61 @@ func testRookRBD() {
 			}
 			return nil
 		}).Should(Succeed())
+	})
+
+	It("should spread OSD PODs on ceph-for-cs", func() {
+		stdout, stderr, err := ExecAt(boot0, "kubectl", "get", "node", "-l", "node-role.kubernetes.io/cs=true", "-o=json")
+		Expect(err).ShouldNot(HaveOccurred(), "stdout=%s, stderr=%s", stdout, stderr)
+
+		nodes := new(corev1.NodeList)
+		err = json.Unmarshal(stdout, nodes)
+		Expect(err).ShouldNot(HaveOccurred())
+
+		nodeCounts := make(map[string]int)
+		for _, node := range nodes.Items {
+			nodeCounts[node.Name] = 0
+		}
+
+		stdout, stderr, err = ExecAt(boot0, "kubectl", "--namespace=ceph-for-cs",
+			"get", "pod", "-l", "app=rook-ceph-osd", "-o=json")
+		Expect(err).ShouldNot(HaveOccurred(), "stdout=%s, stderr=%s", stdout, stderr)
+
+		pods := new(corev1.PodList)
+		err = json.Unmarshal(stdout, pods)
+		Expect(err).ShouldNot(HaveOccurred())
+
+		for _, pod := range pods.Items {
+			nodeCounts[pod.Spec.NodeName]++
+		}
+
+		var min int = math.MaxInt32
+		var max int
+		for _, v := range nodeCounts {
+			if v < min {
+				min = v
+			}
+			if v > max {
+				max = v
+			}
+		}
+		Expect(max-min).Should(BeNumerically("<=", 1), "nodeCounts=%v", nodeCounts)
+
+		rackCounts := make(map[string]int)
+		for _, node := range nodes.Items {
+			rackCounts[node.Labels["topology.kubernetes.io/zone"]] += nodeCounts[node.Name]
+		}
+
+		min = math.MaxInt32
+		max = 0
+		for _, v := range rackCounts {
+			if v < min {
+				min = v
+			}
+			if v > max {
+				max = v
+			}
+		}
+		Expect(max-min).Should(BeNumerically("<=", 1), "rackCounts=%v", rackCounts)
 	})
 
 	It("should be mounted to a path specified on a POD", func() {
