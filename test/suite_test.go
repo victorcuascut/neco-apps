@@ -36,6 +36,9 @@ var _ = BeforeSuite(func() {
 // This must be the only top-level test container.
 // Other tests and test containers must be listed in this.
 var _ = Describe("Test applications", func() {
+	if doStorageTest {
+		Context("loadPods", testLoadPods)
+	}
 	Context("setup", testSetup)
 	if doBootstrap {
 		return

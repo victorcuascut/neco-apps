@@ -12,6 +12,70 @@ import (
 	corev1 "k8s.io/api/core/v1"
 )
 
+func testLoadPods() {
+	It("should deploy pods", func() {
+		yamlCS := `
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: addload-for-cs
+  namespace: default
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: addload
+  template:
+    metadata:
+      labels:
+        app: addload
+    spec:
+      containers:
+      - name: spread-test-ubuntu
+        image: ubuntu:latest
+        command: ["sleep", "infinity"]
+        resources:
+          requests:
+            cpu: "3"
+`
+		stdout, stderr, err := ExecAtWithInput(boot0, []byte(yamlCS), "kubectl", "apply", "-f", "-")
+		Expect(err).ShouldNot(HaveOccurred(), "stdout=%s, stderr=%s", stdout, stderr)
+
+		yamlSS := `
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: addload-for-ss
+  namespace: default
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: addload
+  template:
+    metadata:
+      labels:
+        app: addload
+    spec:
+      containers:
+      - name: spread-test-ubuntu
+        image: ubuntu:latest
+        command: ["sleep", "infinity"]
+        resources:
+          requests:
+            cpu: "1.5"
+      nodeSelector:
+        cke.cybozu.com/role: ss
+      tolerations:
+      - key: cke.cybozu.com/role
+        operator: Equal
+        value: storage
+`
+		stdout, stderr, err = ExecAtWithInput(boot0, []byte(yamlSS), "kubectl", "apply", "-f", "-")
+		Expect(err).ShouldNot(HaveOccurred(), "stdout=%s, stderr=%s", stdout, stderr)
+	})
+}
+
 func testRookOperator() {
 	It("should be deployed successfully", func() {
 		Eventually(func() error {
