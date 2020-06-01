@@ -256,7 +256,7 @@ func stopAutoSync(appName string) error {
 func removeArgoCDIngressHTTPProxy() error {
 	stdout, stderr, err := ExecAt(boot0, "kubectl", "delete", "-n=argocd", "httpproxy", "argocd-server")
 	if err == nil {
-		return fmt.Errorf("unable to delete argocd-server httpproxy. stdout: %s, stderr: %s, err: %v", ns, stdout, stderr, err)
+		return fmt.Errorf("unable to delete argocd-server httpproxy. stdout: %s, stderr: %s, err: %v", stdout, stderr, err)
 	}
 	return nil
 }
@@ -363,6 +363,16 @@ func applyAndWaitForApplications(overlay string) {
 				st.Health.Status == argocd.HealthStatusHealthy &&
 				app.Operation == nil {
 				continue
+			}
+
+			// TODO: Remove this block after https://github.com/cybozu-go/neco-apps/pull/574 has been released
+			if doUpgrade && appName == "argocd-ingress" {
+				for _, ns := range []string{"ingress-forest", "ingress-bastion", "ingress-global"} {
+					stdout, stderr, err := ExecAt(boot0, "kubectl", "delete", "pod", "-n", ns, "-l=app.kubernetes.io/name=envoy")
+					if err != nil {
+						return fmt.Errorf("unable to delete envoy pods. stdout: %s, stderr: %s, err: %v", stdout, stderr, err)
+					}
+				}
 			}
 
 			// In upgrade test, sync without --force may cause temporal network disruption.
