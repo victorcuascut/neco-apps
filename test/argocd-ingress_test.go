@@ -16,43 +16,42 @@ func testArgoCDIngress() {
 	fqdn := testID + "-argocd.gcp0.dev-ne.co"
 
 	It("should create HTTPProxy for ArgoCD", func() {
-		manifest := fmt.Sprintf(`
-apiVersion: projectcontour.io/v1
+		manifest := fmt.Sprintf(`apiVersion: projectcontour.io/v1
 kind: HTTPProxy
 metadata:
   name: argocd-server
   namespace: argocd
   annotations:
-	kubernetes.io/tls-acme: "true"
-	kubernetes.io/ingress.class: bastion
+    kubernetes.io/tls-acme: "true"
+    kubernetes.io/ingress.class: bastion
 spec:
   virtualhost:
-	fqdn: %s
-	tls:
-	  secretName: argocd-server-cert
+    fqdn: %s
+    tls:
+      secretName: argocd-server-cert
   routes:
-	# For static files and Dex APIs
-	- conditions:
-		- prefix: /
-	  services:
-		- name: argocd-server-https
-		  port: 443
-	  timeoutPolicy:
-		response: 2m
-		idle: 5m
-	# For gRPC APIs
-	- conditions:
-		- prefix: /
-		- header:
-			name: content-type
-			contains: application/grpc
-	  services:
-		- name: argocd-server
-		  port: 443
-	  timeoutPolicy:
-		response: 2m
-		idle: 5m
-		`, fqdn)
+    # For static files and Dex APIs
+    - conditions:
+        - prefix: /
+      services:
+        - name: argocd-server-https
+          port: 443
+      timeoutPolicy:
+        response: 2m
+        idle: 5m
+    # For gRPC APIs
+    - conditions:
+        - prefix: /
+        - header:
+            name: content-type
+            contains: application/grpc
+      services:
+        - name: argocd-server
+          port: 443
+      timeoutPolicy:
+        response: 2m
+        idle: 5m
+`, fqdn)
 
 		_, stderr, err := ExecAtWithInput(boot0, []byte(manifest), "kubectl", "apply", "-f", "-")
 		Expect(err).NotTo(HaveOccurred(), "stderr: %s", stderr)
