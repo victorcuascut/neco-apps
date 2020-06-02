@@ -342,6 +342,16 @@ func applyAndWaitForApplications(overlay string) {
 				continue
 			}
 
+			// TODO: Remove this block after https://github.com/cybozu-go/neco-apps/pull/574 has been released
+			if doUpgrade && appName == "argocd-ingress" {
+				for _, ns := range []string{"ingress-forest", "ingress-bastion", "ingress-global"} {
+					stdout, stderr, err := ExecAt(boot0, "kubectl", "delete", "pod", "-n", ns, "-l=app.kubernetes.io/name=envoy")
+					if err != nil {
+						return fmt.Errorf("unable to delete envoy pods. stdout: %s, stderr: %s, err: %v", stdout, stderr, err)
+					}
+				}
+			}
+
 			// In upgrade test, sync without --force may cause temporal network disruption.
 			// It leads to sync-error of other applications,
 			// so sync manually sync-error apps in upgrade test.
