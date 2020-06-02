@@ -4,12 +4,13 @@ metadata:
   name: argocd-server
   namespace: argocd
   annotations:
-    contour-plus.cybozu.com/exclude: "true"
+    kubernetes.io/tls-acme: "true"
+    kubernetes.io/ingress.class: bastion
 spec:
   virtualhost:
     fqdn: argocd.gcp0.dev-ne.co
     tls:
-      secretName: argocd-server-tls
+      secretName: argocd-server-cert
   routes:
     # For static files and Dex APIs
     - conditions:
