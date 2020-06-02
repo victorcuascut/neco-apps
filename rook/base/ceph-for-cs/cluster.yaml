@@ -29,6 +29,10 @@ spec:
     storageClassDeviceSets:
       - name: set1
         count: 20
+        resources:
+          requests:
+            cpu: "500m"
+            memory: "4Gi"
         volumeClaimTemplates:
           - metadata:
               name: data
