@@ -361,7 +361,7 @@ func setupArgoCD() {
 	data, err := ioutil.ReadFile("install.yaml")
 	Expect(err).ShouldNot(HaveOccurred())
 	_, stderr, err := ExecAtWithInput(boot0, data, "kubectl", "apply", "-n", "argocd", "-f", "-")
-	Expect(err).ShouldNot(HaveOccurred(), "stderr=%s", stderr)
+	Expect(err).ShouldNot(HaveOccurred(), "faied to apply install.yaml. stderr=%s", stderr)
 
 	By("waiting Argo CD comes up")
 	// admin password is same as pod name
@@ -370,7 +370,7 @@ func setupArgoCD() {
 		stdout, stderr, err := ExecAt(boot0, "kubectl", "get", "pods", "-n", "argocd",
 			"-l", "app.kubernetes.io/name=argocd-server", "-o", "json")
 		if err != nil {
-			return fmt.Errorf("stdout: %s, stderr: %s, err: %v", stdout, stderr, err)
+			return fmt.Errorf("unable to get argocd-server pods. stdout: %s, stderr: %s, err: %v", stdout, stderr, err)
 		}
 		err = json.Unmarshal(stdout, &podList)
 		if err != nil {
@@ -425,7 +425,7 @@ func setupArgoCD() {
 		stdout, stderr, err := ExecAt(boot0, "argocd", "login", nodeAddress+":"+nodePort,
 			"--insecure", "--username", "admin", "--password", loadArgoCDPassword())
 		if err != nil {
-			return fmt.Errorf("stdout: %s, stderr: %s, err: %v", stdout, stderr, err)
+			return fmt.Errorf("failed to login to argocd. stdout: %s, stderr: %s, err: %v", stdout, stderr, err)
 		}
 		return nil
 	}).Should(Succeed())
