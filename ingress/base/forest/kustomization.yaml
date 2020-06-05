@@ -9,3 +9,4 @@ patchesStrategicMerge:
   - deployment.yaml
   - rbac_contour-plus.yaml
   - certificate.yaml
+  - httpproxy.yaml
