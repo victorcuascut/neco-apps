@@ -10,7 +10,7 @@ spec:
     - namespace: argocd
       server: '*'
   namespaceResourceWhitelist:
-    - group: 'argoproject.io'
+    - group: 'argoproj.io'
       kind: Application
   orphanedResources:
     warn: false
