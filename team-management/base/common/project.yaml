@@ -9,32 +9,8 @@ spec:
   destinations:
     - namespace: argocd
       server: '*'
-  namespaceResourceBlacklist:
-    - group: ''
-      kind: Pod
-    - group: 'apps'
-      kind: ReplicaSet
-    - group: 'apps'
-      kind: Deployment
-    - group: 'apps'
-      kind: StatefulSet
-    - group: 'apps'
-      kind: DaemonSet
-    - group: 'batch'
-      kind: Job
-    - group: 'batch'
-      kind: CronJob
-    - group: ''
-      kind: ConfigMap
-    - group: ''
-      kind: Secret
-    - group: ''
-      kind: Service
-    - group: ''
-      kind: ResourceQuota
-    - group: ''
-      kind: LimitRange
-    - group: 'networking.k8s.io'
-      kind: NetworkPolicy
+  namespaceResourceWhitelist:
+    - group: 'argoproject.io'
+      kind: Application
   orphanedResources:
     warn: false
