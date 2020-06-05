@@ -259,6 +259,23 @@ scrape_configs:
         regex: ([^:]+)(?::\d+)?
         replacement: ${1}
         target_label: instance
+  - job_name: "argocd-dex"
+    kubernetes_sd_configs:
+      - role: service
+        namespaces:
+          names: ["argocd"]
+    relabel_configs:
+      - source_labels: [__meta_kubernetes_service_name]
+        action: keep
+        regex: argocd-dex-server
+      - source_labels: [__meta_kubernetes_service_port_name]
+        action: keep
+        regex: metrics
+      - source_labels: [__address__]
+        action: replace
+        regex: ([^:]+)(?::\d+)?
+        replacement: ${1}
+        target_label: instance
   - job_name: "cke-etcd"
     kubernetes_sd_configs:
       - role: endpoints
