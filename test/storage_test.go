@@ -36,7 +36,7 @@ spec:
         command: ["sleep", "infinity"]
         resources:
           requests:
-            cpu: "3"
+            cpu: "2"
 `
 		stdout, stderr, err := ExecAtWithInput(boot0, []byte(yamlCS), "kubectl", "apply", "-f", "-")
 		Expect(err).ShouldNot(HaveOccurred(), "stdout=%s, stderr=%s", stdout, stderr)
@@ -63,7 +63,7 @@ spec:
         command: ["sleep", "infinity"]
         resources:
           requests:
-            cpu: "1.5"
+            cpu: "1"
       nodeSelector:
         cke.cybozu.com/role: ss
       tolerations:
