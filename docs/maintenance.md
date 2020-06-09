@@ -114,7 +114,7 @@ Update version following [this link](https://github.com/cybozu/neco-containers/b
 
 ## network-policy (Calico)
 
-Check [the release notes](https://docs.projectcalico.org/v3.11/release-notes/).
+Check [the release notes](https://docs.projectcalico.org/release-notes/).
 
 Download the upstream manifest as follows:
 
