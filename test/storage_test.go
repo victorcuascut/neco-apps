@@ -73,6 +73,46 @@ spec:
 `
 		stdout, stderr, err = ExecAtWithInput(boot0, []byte(yamlSS), "kubectl", "apply", "-f", "-")
 		Expect(err).ShouldNot(HaveOccurred(), "stdout=%s, stderr=%s", stdout, stderr)
+
+		Eventually(func() error {
+			stdout, stderr, err := ExecAt(boot0, "kubectl",
+				"get", "deployment", "addload-for-cs", "-o=json")
+			if err != nil {
+				return fmt.Errorf("stdout: %s, stderr: %s, err: %v", stdout, stderr, err)
+			}
+
+			deployment := new(appsv1.Deployment)
+			err = json.Unmarshal(stdout, deployment)
+			if err != nil {
+				return fmt.Errorf("stdout: %s, err: %v", stdout, err)
+			}
+
+			if deployment.Status.AvailableReplicas != 2 {
+				return fmt.Errorf("addload-for-cs deployment's AvailableReplica is not 2: %d", int(deployment.Status.AvailableReplicas))
+			}
+
+			return nil
+		}).Should(Succeed())
+
+		Eventually(func() error {
+			stdout, stderr, err := ExecAt(boot0, "kubectl",
+				"get", "deployment", "addload-for-ss", "-o=json")
+			if err != nil {
+				return fmt.Errorf("stdout: %s, stderr: %s, err: %v", stdout, stderr, err)
+			}
+
+			deployment := new(appsv1.Deployment)
+			err = json.Unmarshal(stdout, deployment)
+			if err != nil {
+				return fmt.Errorf("stdout: %s, err: %v", stdout, err)
+			}
+
+			if deployment.Status.AvailableReplicas != 2 {
+				return fmt.Errorf("addload-for-ss deployment's AvailableReplica is not 2: %d", int(deployment.Status.AvailableReplicas))
+			}
+
+			return nil
+		}).Should(Succeed())
 	})
 }
 
