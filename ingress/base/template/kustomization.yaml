@@ -9,3 +9,4 @@ resources:
   - pdb.yaml
   - rbac_contour-plus.yaml
   - service.yaml
+  - httpproxy.yaml

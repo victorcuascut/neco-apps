@@ -1,0 +1,59 @@
+apiVersion: projectcontour.io/v1
+kind: HTTPProxy
+metadata:
+  name: dummy
+  namespace: ingress
+  annotations:
+    contour-plus.cybozu.com/exclude: "true"
+    kubernetes.io/ingress.class: bastion
+spec:
+  virtualhost:
+    fqdn: dummy.ingress.dummy
+    tls:
+      secretName: dummy-httpproxy-tls
+  routes:
+    - conditions:
+        - prefix: /
+      services:
+        - name: dummy
+          port: 80
+        - name: dummy
+          port: 443
+---
+apiVersion: cert-manager.io/v1alpha2
+kind: Certificate
+metadata:
+  name: dummy-httpproxy
+  namespace: ingress
+spec:
+  secretName: dummy-httpproxy-tls
+  duration: 87600h0m0s # 10y
+  issuerRef:
+    name: contour-selfsign
+  commonName: "dummy.ingress.dummy"
+  usages:
+    - digital signature
+    - key encipherment
+    - server auth
+    - client auth
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: dummy
+  namespace: ingress
+  annotations:
+    projectcontour.io/upstream-protocol.tls: "443"
+    projectcontour.io/upstream-protocol.h2: "80"
+spec:
+  ports:
+  - port: 80
+    name: http
+    protocol: TCP
+    targetPort: 8080
+  - port: 443
+    name: https
+    protocol: TCP
+    targetPort: 8443
+  selector:
+    app.kubernetes.io/name: dummy
