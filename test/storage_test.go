@@ -32,8 +32,12 @@ spec:
     spec:
       containers:
       - name: spread-test-ubuntu
-        image: ubuntu:latest
-        command: ["sleep", "infinity"]
+        image: quay.io/cybozu/ubuntu:18.04
+        command:
+        - "/usr/local/bin/pause"
+        securityContext:
+          runAsUser: 10000
+          runAsGroup: 10000
         resources:
           requests:
             cpu: "2"
@@ -59,8 +63,12 @@ spec:
     spec:
       containers:
       - name: spread-test-ubuntu
-        image: ubuntu:latest
-        command: ["sleep", "infinity"]
+        image: quay.io/cybozu/ubuntu:18.04
+        command:
+        - "/usr/local/bin/pause"
+        securityContext:
+          runAsUser: 10000
+          runAsGroup: 10000
         resources:
           requests:
             cpu: "1"
