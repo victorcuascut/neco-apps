@@ -35,10 +35,6 @@ spec:
           - --leader-election-namespace=kube-system
           - --dns01-recursive-nameservers-only
           - --enable-certificate-owner-ref
-          - --webhook-namespace=$(POD_NAMESPACE)
-          - --webhook-ca-secret=cert-manager-webhook-ca
-          - --webhook-serving-secret=cert-manager-webhook-tls
-          - --webhook-dns-names=cert-manager-webhook,cert-manager-webhook.cert-manager,cert-manager-webhook.cert-manager.svc
           env:
           - name: NO_PROXY
             value: 10.0.0.0/8
@@ -63,9 +59,6 @@ spec:
           command:
           - webhook
           volumeMounts:
-          - name: certs
-            mountPath: /certs
-            readOnly: true
           - name: tmp
             mountPath: /tmp
       volumes:
