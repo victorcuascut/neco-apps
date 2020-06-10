@@ -36,7 +36,9 @@ var _ = BeforeSuite(func() {
 // This must be the only top-level test container.
 // Other tests and test containers must be listed in this.
 var _ = Describe("Test applications", func() {
-	Context("loadPods", testLoadPods)
+	if !withKind {
+		Context("loadPods", testLoadPods)
+	}
 	Context("setup", testSetup)
 	if doBootstrap {
 		return
@@ -44,9 +46,11 @@ var _ = Describe("Test applications", func() {
 	if doReboot {
 		Context("reboot", testRebootAllNodes)
 	}
-	Context("rookOperator", testRookOperator)
-	Context("rookRGW", testRookRGW)
-	Context("rookRBD", testRookRBD)
+	if !withKind {
+		Context("rookOperator", testRookOperator)
+		Context("rookRGW", testRookRGW)
+		Context("rookRBD", testRookRBD)
+	}
 	if doStorageTest {
 		return
 	}
