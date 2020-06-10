@@ -13,6 +13,43 @@ import (
 )
 
 func testLoadPods() {
+	It("should increase worker nodes", func() {
+		ExecSafeAt(boot0, "ckecli", "sabakan", "enable")
+		ExecSafeAt(boot0, "ckecli", "constraints", "set", "minimum-workers", "4")
+		Eventually(func() error {
+			stdout, stderr, err := ExecAt(boot0, "kubectl", "get", "nodes", "-o", "json")
+			if err != nil {
+				return fmt.Errorf("stdout: %s, stderr: %s, err: %v", stdout, stderr, err)
+			}
+
+			var nl corev1.NodeList
+			err = json.Unmarshal(stdout, &nl)
+			if err != nil {
+				return err
+			}
+
+			// control-plane: 3, minimum-workers: 4
+			if len(nl.Items) != 7 {
+				return fmt.Errorf("too few nodes: %d", len(nl.Items))
+			}
+
+			readyNodeSet := make(map[string]struct{})
+			for _, n := range nl.Items {
+				for _, c := range n.Status.Conditions {
+					if c.Type == corev1.NodeReady && c.Status == corev1.ConditionTrue {
+						readyNodeSet[n.Name] = struct{}{}
+					}
+				}
+			}
+			if len(readyNodeSet) != 7 {
+				return fmt.Errorf("some nodes are not ready")
+			}
+
+			return nil
+		}).Should(Succeed())
+		ExecSafeAt(boot0, "ckecli", "sabakan", "disable")
+	})
+
 	It("should deploy pods", func() {
 		yamlCS := `
 apiVersion: apps/v1
