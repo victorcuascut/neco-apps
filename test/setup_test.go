@@ -196,8 +196,6 @@ func testSetup() {
 		ExecSafeAt(boot0, "sed", "-i", "s/release/"+commitID+"/", "./neco-apps/argocd-config/base/*.yaml")
 		if withKind {
 			applyAndWaitForApplications("kind", commitID)
-		} else if doStorageTest {
-			applyAndWaitForApplications("gcp-storage", commitID)
 		} else {
 			applyAndWaitForApplications("gcp", commitID)
 		}

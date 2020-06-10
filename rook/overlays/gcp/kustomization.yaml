@@ -1,5 +1,7 @@
-# This file is a workaround for kindtest (not 'overlays' manifest)
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
-resources:
-  - serviceaccount.yaml
+bases:
+  - ../../base
+patchesStrategicMerge:
+  - ceph-for-cs/cluster.yaml
+  - ceph-for-ss/cluster.yaml
