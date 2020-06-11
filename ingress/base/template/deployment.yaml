@@ -214,11 +214,7 @@ spec:
         - mountPath: /certs
           name: envoycert
       - name: liveness-probe
-<<<<<<< HEAD
-        image: quay.io/cybozu/envoy:1.13.2.1
-=======
         image: quay.io/cybozu/envoy:1.14.2.1
->>>>>>> ingress: update upstream manifests
         command:
           - /usr/local/bin/livenessprobe
       initContainers:
