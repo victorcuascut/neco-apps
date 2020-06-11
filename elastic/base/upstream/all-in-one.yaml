@@ -2059,7 +2059,7 @@ spec:
     spec:
       serviceAccountName: elastic-operator
       containers:
-      - image: docker.elastic.co/eck/eck-operator:1.1.0
+      - image: docker.elastic.co/eck/eck-operator:1.1.2
         name: manager
         args: ["manager", "--enable-webhook", "--log-verbosity=0"]
         env:
@@ -2070,7 +2070,7 @@ spec:
           - name: WEBHOOK_SECRET
             value: elastic-webhook-server-cert
           - name: OPERATOR_IMAGE
-            value: docker.elastic.co/eck/eck-operator:1.1.0
+            value: docker.elastic.co/eck/eck-operator:1.1.2
         resources:
           limits:
             cpu: 1
