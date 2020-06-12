@@ -2,7 +2,7 @@ apiVersion: ceph.rook.io/v1
 kind: CephObjectStore
 metadata:
   name: ss-object-store
-  namespace: ceph-for-ss
+  namespace: ceph-hdd
   annotations:
     argocd.argoproj.io/sync-wave: "2"
 spec:
@@ -57,6 +57,6 @@ metadata:
 provisioner: ceph.rook.io/bucket
 parameters:
   objectStoreName: ss-object-store
-  objectStoreNamespace: ceph-for-ss
+  objectStoreNamespace: ceph-hdd
   region: us-west-1
 reclaimPolicy: Delete

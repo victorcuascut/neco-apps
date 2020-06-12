@@ -11,7 +11,7 @@ spec:
 apiVersion: v1
 kind: Namespace
 metadata:
-  name: ceph-for-ss
+  name: ceph-hdd
   labels:
     control-plane: "true"
 spec:
@@ -21,7 +21,7 @@ spec:
 apiVersion: v1
 kind: Namespace
 metadata:
-  name: ceph-for-cs
+  name: ceph-ssd
   labels:
     control-plane: "true"
 spec:

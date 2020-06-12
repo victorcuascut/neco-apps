@@ -2,7 +2,7 @@ apiVersion: ceph.rook.io/v1
 kind: CephBlockPool
 metadata:
   name: cs-block-pool
-  namespace: ceph-for-cs
+  namespace: ceph-ssd
   annotations:
     argocd.argoproj.io/sync-wave: "2"
 spec:
@@ -20,7 +20,7 @@ metadata:
 provisioner: rook-ceph.rbd.csi.ceph.com
 parameters:
   # clusterID is the namespace where the rook cluster is running
-  clusterID: ceph-for-cs
+  clusterID: ceph-ssd
   # Ceph pool into which the RBD image shall be created
   pool: cs-block-pool
 
@@ -32,11 +32,11 @@ parameters:
 
   # The secrets contain Ceph admin credentials.
   csi.storage.k8s.io/provisioner-secret-name: rook-csi-rbd-provisioner
-  csi.storage.k8s.io/provisioner-secret-namespace: ceph-for-cs
+  csi.storage.k8s.io/provisioner-secret-namespace: ceph-ssd
   csi.storage.k8s.io/controller-expand-secret-name: rook-csi-rbd-provisioner
-  csi.storage.k8s.io/controller-expand-secret-namespace: ceph-for-cs
+  csi.storage.k8s.io/controller-expand-secret-namespace: ceph-ssd
   csi.storage.k8s.io/node-stage-secret-name: rook-csi-rbd-node
-  csi.storage.k8s.io/node-stage-secret-namespace: ceph-for-cs
+  csi.storage.k8s.io/node-stage-secret-namespace: ceph-ssd
 
   # Specify the filesystem type of the volume. If not specified, csi-provisioner
   # will set default as `ext4`.

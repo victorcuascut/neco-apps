@@ -155,8 +155,8 @@ func testRookRGW() {
 
 	It("should be deployed successfully", func() {
 		Eventually(func() error {
-			stdout, _, err := ExecAt(boot0, "kubectl", "--namespace=ceph-for-ss",
-				"get", "cephcluster ceph-for-ss", "-o", "jsonpath='{.status.ceph.health}'")
+			stdout, _, err := ExecAt(boot0, "kubectl", "--namespace=ceph-hdd",
+				"get", "cephcluster ceph-hdd", "-o", "jsonpath='{.status.ceph.health}'")
 			if err != nil {
 				return err
 			}
@@ -170,7 +170,7 @@ func testRookRGW() {
 
 	It("should deploy OSD POD successfully", func() {
 		Eventually(func() error {
-			stdout, _, err := ExecAt(boot0, "kubectl", "--namespace=ceph-for-ss",
+			stdout, _, err := ExecAt(boot0, "kubectl", "--namespace=ceph-hdd",
 				"get", "deployment/rook-ceph-osd-0", "-o=json")
 			if err != nil {
 				return err
@@ -189,7 +189,7 @@ func testRookRGW() {
 		}).Should(Succeed())
 	})
 
-	It("should spread OSD PODs on ceph-for-ss", func() {
+	It("should spread OSD PODs on ceph-hdd", func() {
 		stdout, stderr, err := ExecAt(boot0, "kubectl", "get", "node", "-l", "node-role.kubernetes.io/ss=true", "-o=json")
 		Expect(err).ShouldNot(HaveOccurred(), "stdout=%s, stderr=%s", stdout, stderr)
 
@@ -202,7 +202,7 @@ func testRookRGW() {
 			nodeCounts[node.Name] = 0
 		}
 
-		stdout, stderr, err = ExecAt(boot0, "kubectl", "--namespace=ceph-for-ss",
+		stdout, stderr, err = ExecAt(boot0, "kubectl", "--namespace=ceph-hdd",
 			"get", "pod", "-l", "app=rook-ceph-osd", "-o=json")
 		Expect(err).ShouldNot(HaveOccurred(), "stdout=%s, stderr=%s", stdout, stderr)
 
@@ -312,8 +312,8 @@ func testRookRBD() {
 
 	It("should be deployed successfully", func() {
 		Eventually(func() error {
-			stdout, _, err := ExecAt(boot0, "kubectl", "--namespace=ceph-for-cs",
-				"get", "cephcluster ceph-for-cs", "-o", "jsonpath='{.status.ceph.health}'")
+			stdout, _, err := ExecAt(boot0, "kubectl", "--namespace=ceph-ssd",
+				"get", "cephcluster ceph-ssd", "-o", "jsonpath='{.status.ceph.health}'")
 			if err != nil {
 				return err
 			}
@@ -327,7 +327,7 @@ func testRookRBD() {
 
 	It("should deploy OSD POD successfully", func() {
 		Eventually(func() error {
-			stdout, _, err := ExecAt(boot0, "kubectl", "--namespace=ceph-for-cs",
+			stdout, _, err := ExecAt(boot0, "kubectl", "--namespace=ceph-ssd",
 				"get", "deployment/rook-ceph-osd-0", "-o=json")
 			if err != nil {
 				return err
@@ -346,7 +346,7 @@ func testRookRBD() {
 		}).Should(Succeed())
 	})
 
-	It("should spread OSD PODs on ceph-for-cs", func() {
+	It("should spread OSD PODs on ceph-ssd", func() {
 		stdout, stderr, err := ExecAt(boot0, "kubectl", "get", "node", "-l", "node-role.kubernetes.io/cs=true", "-o=json")
 		Expect(err).ShouldNot(HaveOccurred(), "stdout=%s, stderr=%s", stdout, stderr)
 
@@ -359,7 +359,7 @@ func testRookRBD() {
 			nodeCounts[node.Name] = 0
 		}
 
-		stdout, stderr, err = ExecAt(boot0, "kubectl", "--namespace=ceph-for-cs",
+		stdout, stderr, err = ExecAt(boot0, "kubectl", "--namespace=ceph-ssd",
 			"get", "pod", "-l", "app=rook-ceph-osd", "-o=json")
 		Expect(err).ShouldNot(HaveOccurred(), "stdout=%s, stderr=%s", stdout, stderr)
 

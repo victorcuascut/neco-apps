@@ -1,34 +1,20 @@
 apiVersion: ceph.rook.io/v1
 kind: CephCluster
 metadata:
-  name: ceph-for-cs
-  namespace: ceph-for-cs
-  annotations:
-    argocd.argoproj.io/sync-wave: "1"
+  name: ceph-ssd
+  namespace: ceph-ssd
 spec:
-  dataDirHostPath: /var/lib/rook
   mon:
-    count: 3
+    count: 1
     volumeClaimTemplate:
       spec:
-        storageClassName: topolvm-provisioner
         resources:
           requests:
-            storage: 10Gi
-  mgr:
-    modules:
-      - name: pg_autoscaler
-        enabled: true
-  cephVersion:
-    image: quay.io/cybozu/ceph:15.2.3.1
-  dashboard:
-    ssl: true
-  priorityClassNames:
-    osd: node-bound
+            storage: 5Gi
   storage:
     storageClassDeviceSets:
       - name: set1
-        count: 20
+        count: 3
         resources:
           requests:
             cpu: "500m"
@@ -39,8 +25,7 @@ spec:
             spec:
               resources:
                 requests:
-                  storage: 1Ti
-              # IMPORTANT: Change the storage class depending on your environment (e.g. local-storage, gp2)
+                  storage: 5Gi
               storageClassName: topolvm-provisioner
               volumeMode: Block
               accessModes:

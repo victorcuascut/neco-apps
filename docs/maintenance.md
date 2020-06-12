@@ -138,8 +138,8 @@ Then check the diffs by `git diff`.
 TODO:  
 Following manifests can be retrieved from upstream, after [PR](https://github.com/rook/rook/pull/5240) is merged.
 - rook/base/upstream/common.yaml
-- rook/base/ceph-for-cs/rbac.yaml
-- rook/base/ceph-for-ss/rbac.yaml
+- rook/base/ceph-ssd/rbac.yaml
+- rook/base/ceph-hdd/rbac.yaml
 
 teleport
 --------

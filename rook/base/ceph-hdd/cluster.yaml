@@ -1,20 +1,34 @@
 apiVersion: ceph.rook.io/v1
 kind: CephCluster
 metadata:
-  name: ceph-for-cs
-  namespace: ceph-for-cs
+  name: ceph-hdd
+  namespace: ceph-hdd
+  annotations:
+    argocd.argoproj.io/sync-wave: "1"
 spec:
+  dataDirHostPath: /var/lib/rook
   mon:
-    count: 1
+    count: 3
     volumeClaimTemplate:
       spec:
+        storageClassName: topolvm-provisioner
         resources:
           requests:
-            storage: 5Gi
+            storage: 10Gi
+  mgr:
+    modules:
+      - name: pg_autoscaler
+        enabled: true
+  cephVersion:
+    image: quay.io/cybozu/ceph:15.2.3.1
+  dashboard:
+    ssl: true
+  priorityClassNames:
+    osd: node-bound
   storage:
     storageClassDeviceSets:
       - name: set1
-        count: 3
+        count: 18
         resources:
           requests:
             cpu: "500m"
@@ -25,12 +39,19 @@ spec:
             spec:
               resources:
                 requests:
+                  # Local-storage provisioner allocates whole disk capacity, in spite of the storage request specified.
                   storage: 5Gi
-              storageClassName: topolvm-provisioner
+              # IMPORTANT: Change the storage class depending on your environment (e.g. local-storage, gp2)
+              storageClassName: local-storage
               volumeMode: Block
               accessModes:
                 - ReadWriteOnce
         placement:
+          tolerations:
+            - key: cke.cybozu.com/role
+              operator: Equal
+              value: storage
+              effect: NoExecute
           topologySpreadConstraints:
             - maxSkew: 1
               topologyKey: topology.kubernetes.io/zone
