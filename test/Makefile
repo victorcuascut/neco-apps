@@ -21,10 +21,10 @@ export GOFLAGS
 # https://github.com/cybozu/neco-containers/blob/master/argocd/Dockerfile#L32
 KUSTOMIZE_VERSION = 3.6.1
 PROMTOOL_VERSION := 2.12.0
-TELEPORT_VERSION := 4.2.8
+TELEPORT_VERSION := 4.2.10
 KUBERNETES_VERSION = 1.17.4
 KIND_VERSION = 0.7.0
-ARGOCD_VERSION = 1.5.6
+ARGOCD_VERSION = 1.5.7
 
 install.yaml: $(shell find ../argocd/base)
 	kustomize build ../argocd/base/ > install.yaml
