@@ -291,10 +291,20 @@ spec:
 	})
 
 	if !withKind {
+
 		It("should be accessed from Bastion", func() {
+			By("getting the IP address of the contour LoadBalancer")
+			stdout, _, err := ExecAt(boot0, "kubectl", "-n=ingress-bastion", "get", "service/envoy", "-o=json")
+			Expect(err).ShouldNot(HaveOccurred())
+			svc := new(corev1.Service)
+			err = json.Unmarshal(stdout, svc)
+			Expect(err).ShouldNot(HaveOccurred())
+			Expect(len(svc.Status.LoadBalancer.Ingress)).To(Equal(1))
+			bastionIP := svc.Status.LoadBalancer.Ingress[0].IP
+
 			Eventually(func() error {
 				stdout, stderr, err := ExecAt(boot0,
-					"curl", "-sL", "http://"+bastionFQDN,
+					"curl", "-sL", "--resolve", bastionFQDN+":80:"+bastionIP, "http://"+bastionFQDN+"/-/healthy",
 					"-o", "/dev/null",
 				)
 				if err != nil {
@@ -305,8 +315,15 @@ spec:
 		})
 
 		It("should be accessed from Forest", func() {
+			stdout, _, err := ExecAt(boot0, "kubectl", "-n=ingress-forest", "get", "service/envoy", "-o=json")
+			Expect(err).ShouldNot(HaveOccurred())
+			svc := new(corev1.Service)
+			err = json.Unmarshal(stdout, svc)
+			Expect(err).ShouldNot(HaveOccurred())
+			Expect(len(svc.Status.LoadBalancer.Ingress)).To(Equal(1))
+			forestIP := svc.Status.LoadBalancer.Ingress[0].IP
 			Eventually(func() error {
-				return exec.Command("sudo", "nsenter", "-n", "-t", externalPID, "curl", "http://"+forestFQDN, "-m", "5").Run()
+				return exec.Command("sudo", "nsenter", "-n", "-t", externalPID, "curl", "--resolve", forestFQDN+":80:"+forestIP, forestFQDN+"/-/healthy", "-m", "5").Run()
 			}).Should(Succeed())
 		})
 	}
