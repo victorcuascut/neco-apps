@@ -114,13 +114,16 @@ Update version following [this link](https://github.com/cybozu/neco-containers/b
 
 ## network-policy (Calico)
 
-Check [the release notes](https://docs.projectcalico.org/v3.11/release-notes/).
+Check [the release notes](https://docs.projectcalico.org/release-notes/).
 
 Download the upstream manifest as follows:
 
 ```console
 $ curl -sLf -o network-policy/base/calico/upstream/calico-policy-only.yaml https://docs.projectcalico.org/vX.Y/manifests/calico-policy-only.yaml
 ```
+
+Remove the resources related to `calico-kube-controllers` from `calico-policy-only.yaml` because we do not need to use `calico/kube-controllers`.
+See: [Kubernetes controllers configuration](https://docs.projectcalico.org/reference/resources/kubecontrollersconfig)
 
 teleport
 --------
