@@ -46,3 +46,6 @@ configMapGenerator:
   - name: alertmanager
     files:
       - alertmanager/neco.template
+imageTags:
+  - name: quay.io/cybozu/prometheus
+    newTag: 2.18.1.1
