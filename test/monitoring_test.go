@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"reflect"
 	"sort"
@@ -223,6 +224,92 @@ func testAlertmanager() {
 			return nil
 		}).Should(Succeed())
 	})
+}
+
+func testPushgateway() {
+	bastionFQDN := testID + "-pushgateway-bastion.gcp0.dev-ne.co"
+	forestFQDN := testID + "-pushgateway-forest.gcp0.dev-ne.co"
+	manifestBase := `apiVersion: projectcontour.io/v1
+kind: HTTPProxy
+metadata:
+  name: pushgateway-bastion
+  namespace: monitoring
+  annotations:
+    kubernetes.io/ingress.class: bastion
+spec:
+  virtualhost:
+    fqdn: %s
+  routes:
+    - conditions:
+        - prefix: /
+      services:
+        - name: pushgateway
+          port: 9091
+---
+apiVersion: projectcontour.io/v1
+kind: HTTPProxy
+metadata:
+  name: pushgateway-forest
+  namespace: monitoring
+  annotations:
+    kubernetes.io/ingress.class: forest
+spec:
+  virtualhost:
+    fqdn: %s
+  routes:
+    - conditions:
+        - prefix: /
+      services:
+        - name: pushgateway
+          port: 9091
+`
+
+	It("should create HTTPProxy for Pushgateway", func() {
+		manifest := fmt.Sprintf(manifestBase, bastionFQDN, forestFQDN)
+		_, stderr, err := ExecAtWithInput(boot0, []byte(manifest), "kubectl", "apply", "-f", "-")
+		Expect(err).NotTo(HaveOccurred(), "stderr: %s", stderr)
+	})
+
+	It("should be deployed successfully", func() {
+		Eventually(func() error {
+			stdout, _, err := ExecAt(boot0, "kubectl", "--namespace=monitoring",
+				"get", "deployment/pushgateway", "-o=json")
+			if err != nil {
+				return err
+			}
+			deployment := new(appsv1.Deployment)
+			err = json.Unmarshal(stdout, deployment)
+			if err != nil {
+				return err
+			}
+
+			if int(deployment.Status.AvailableReplicas) != 1 {
+				return fmt.Errorf("AvailableReplicas is not 1: %d", int(deployment.Status.AvailableReplicas))
+			}
+			return nil
+		}).Should(Succeed())
+	})
+
+	if !withKind {
+		It("should be accessed from Bastion", func() {
+			Eventually(func() error {
+				stdout, stderr, err := ExecAt(boot0,
+					"curl", "-sL", "http://"+bastionFQDN,
+					"-o", "/dev/null",
+				)
+				if err != nil {
+					return fmt.Errorf("stdout: %s, stderr: %s, err: %v", stdout, stderr, err)
+				}
+				return nil
+			}).Should(Succeed())
+		})
+
+		It("should be accessed from Forest", func() {
+			Eventually(func() error {
+				return exec.Command("sudo", "nsenter", "-n", "-t", externalPID, "curl", "http://"+forestFQDN, "-m", "5").Run()
+			}).Should(Succeed())
+		})
+	}
 }
 
 func testGrafanaOperator() {

@@ -19,6 +19,8 @@ resources:
   - prometheus/statefulset.yaml
   - alertmanager/deployment.yaml
   - alertmanager/service.yaml
+  - pushgateway/deployment.yaml
+  - pushgateway/service.yaml
 configMapGenerator:
   - name: prometheus-server-conf
     files:

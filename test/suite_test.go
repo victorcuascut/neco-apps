@@ -58,6 +58,7 @@ var _ = Describe("Test applications", func() {
 	Context("grafana-operator", testGrafanaOperator)
 	Context("sandbox-grafana", testSandboxGrafana)
 	Context("alertmanager", testAlertmanager)
+	Context("pushgateway", testPushgateway)
 	Context("prometheus-metrics", testPrometheusMetrics)
 	Context("metrics-server", testMetricsServer)
 	if !withKind {
