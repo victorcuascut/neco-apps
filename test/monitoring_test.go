@@ -291,17 +291,10 @@ spec:
 	})
 
 	if !withKind {
-
 		It("should be accessed from Bastion", func() {
 			By("getting the IP address of the contour LoadBalancer")
-			stdout, _, err := ExecAt(boot0, "kubectl", "-n=ingress-bastion", "get", "service/envoy", "-o=json")
+			bastionIP, err := getLoadBalancerIP("ingress-bastion", "envoy")
 			Expect(err).ShouldNot(HaveOccurred())
-			svc := new(corev1.Service)
-			err = json.Unmarshal(stdout, svc)
-			Expect(err).ShouldNot(HaveOccurred())
-			Expect(len(svc.Status.LoadBalancer.Ingress)).To(Equal(1))
-			bastionIP := svc.Status.LoadBalancer.Ingress[0].IP
-
 			Eventually(func() error {
 				stdout, stderr, err := ExecAt(boot0,
 					"curl", "-sL", "--resolve", bastionFQDN+":80:"+bastionIP, "http://"+bastionFQDN+"/-/healthy",
@@ -315,18 +308,29 @@ spec:
 		})
 
 		It("should be accessed from Forest", func() {
-			stdout, _, err := ExecAt(boot0, "kubectl", "-n=ingress-forest", "get", "service/envoy", "-o=json")
+			forestIP, err := getLoadBalancerIP("ingress-forest", "envoy")
 			Expect(err).ShouldNot(HaveOccurred())
-			svc := new(corev1.Service)
-			err = json.Unmarshal(stdout, svc)
-			Expect(err).ShouldNot(HaveOccurred())
-			Expect(len(svc.Status.LoadBalancer.Ingress)).To(Equal(1))
-			forestIP := svc.Status.LoadBalancer.Ingress[0].IP
 			Eventually(func() error {
 				return exec.Command("sudo", "nsenter", "-n", "-t", externalPID, "curl", "--resolve", forestFQDN+":80:"+forestIP, forestFQDN+"/-/healthy", "-m", "5").Run()
 			}).Should(Succeed())
 		})
 	}
+}
+
+func getLoadBalancerIP(namespace, service string) (string, error) {
+	stdout, stderr, err := ExecAt(boot0, "kubectl", "-n", namespace, "get", "service", service, "-o=json")
+	if err != nil {
+		return "", fmt.Errorf("unable to get %s/%s. stdout: %s, stderr: %s, err: %w", namespace, service, stdout, stderr, err)
+	}
+	svc := new(corev1.Service)
+	err = json.Unmarshal(stdout, svc)
+	if err != nil {
+		return "", fmt.Errorf("failed to unmarshal %s/%s. err: %w", namespace, service, err)
+	}
+	if len(svc.Status.LoadBalancer.Ingress) != 1 {
+		return "", fmt.Errorf("len(svc.Status.LoadBalancer.Ingress) != 1. %d", len(svc.Status.LoadBalancer.Ingress))
+	}
+	return svc.Status.LoadBalancer.Ingress[0].IP, nil
 }
 
 func testGrafanaOperator() {
