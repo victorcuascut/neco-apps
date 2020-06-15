@@ -1,13 +1,18 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 resources:
-  - upstream/common.yaml
-  - upstream/operator.yaml
-  - ceph-ssd/cephblockpool.yaml
-  - ceph-ssd/cluster.yaml
-  - ceph-ssd/rbac.yaml
-  - ceph-hdd/cephobjectstore.yaml
-  - ceph-hdd/cluster.yaml
-  - ceph-hdd/rbac.yaml
-patchesStrategicMerge:
-  - operator.yaml
+  - common/clusterrole.yaml
+  - common/crd.yaml
+  - common/psp.yaml
+  - ceph-hdd/serviceaccount.yaml
+  - ceph-hdd/role.yaml
+
+# helm template upstream/chart -f values.yaml -x templates/psp.yaml > common/psp.yaml
+# helm template upstream/chart -f values.yaml -x templates/clusterrole.yaml > common/clusterrole.yaml
+# helm template upstream/chart -f values.yaml -x templates/resources.yaml > common/crd.yaml
+
+# helm template upstream/chart -f values.yaml -x templates/serviceaccount.yaml --namespace ceph-hdd > ceph-hdd/serviceaccount.yaml
+# helm template upstream/chart -f values.yaml -x templates/role.yaml --namespace ceph-hdd > ceph-hdd/role.yaml
+# helm template upstream/chart -f values.yaml -x templates/rolebinding.yaml --namespace ceph-hdd > ceph-hdd/rolebinding.yaml
+# helm template upstream/chart -f values.yaml -x templates/clusterrolebinding.yaml --namespace ceph-hdd > ceph-hdd/clusterrolebinding.yaml
+# helm template upstream/chart -f values.yaml -x templates/deployment.yaml --namespace ceph-hdd > ceph-hdd/deployment.yaml
