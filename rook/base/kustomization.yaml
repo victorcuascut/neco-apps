@@ -4,8 +4,8 @@ resources:
   - common/clusterrole.yaml
   - common/crd.yaml
   - common/psp.yaml
-  - ceph-hdd/serviceaccount.yaml
-  - ceph-hdd/role.yaml
+  - ceph-hdd
+  - ceph-ssd
 
 # helm template upstream/chart -f values.yaml -x templates/psp.yaml > common/psp.yaml
 # helm template upstream/chart -f values.yaml -x templates/clusterrole.yaml > common/clusterrole.yaml
@@ -14,5 +14,5 @@ resources:
 # helm template upstream/chart -f values.yaml -x templates/serviceaccount.yaml --namespace ceph-hdd > ceph-hdd/serviceaccount.yaml
 # helm template upstream/chart -f values.yaml -x templates/role.yaml --namespace ceph-hdd > ceph-hdd/role.yaml
 # helm template upstream/chart -f values.yaml -x templates/rolebinding.yaml --namespace ceph-hdd > ceph-hdd/rolebinding.yaml
-# helm template upstream/chart -f values.yaml -x templates/clusterrolebinding.yaml --namespace ceph-hdd > ceph-hdd/clusterrolebinding.yaml
+# helm template upstream/chart -f values.yaml -x templates/clusterrolebinding.yaml --namespace ceph-hdd > ceph-hdd/clusterrolebinding/clusterrolebinding.yaml
 # helm template upstream/chart -f values.yaml -x templates/deployment.yaml --namespace ceph-hdd > ceph-hdd/deployment.yaml

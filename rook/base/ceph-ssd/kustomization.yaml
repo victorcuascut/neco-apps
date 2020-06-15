@@ -7,6 +7,6 @@ resources:
   - role.yaml
   - rolebinding.yaml
   - serviceaccount.yaml
-namespace: ceph-hdd
+namespace: ceph-ssd
 patchesStrategicMerge:
   - operator.yaml
