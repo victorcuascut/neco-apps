@@ -1,7 +1,7 @@
 include Makefile
 
 KIND_NODE_VERSION = 1.17
-TOPOLVM_VERSION = 0.4.1
+TOPOLVM_VERSION = 0.5.0-rc.1
 TOPOLVM_STORAGE_SIZE = 20G
 
 /tmp/kindtest/scheduler/scheduler-config.yaml: kind/scheduler-config.yaml
@@ -35,7 +35,7 @@ start-lvmd: build/lvmd
 	truncate --size=$(TOPOLVM_STORAGE_SIZE) build/backing_store
 	$(SUDO) losetup -f build/backing_store
 	$(SUDO) vgcreate -y kindtest-vg $$($(SUDO) losetup -j build/backing_store | cut -d: -f1)
-	$(SUDO) systemd-run --unit=kindtest-lvmd.service $(shell pwd)/build/lvmd --volume-group=kindtest-vg --listen=/tmp/kindtest/lvmd/lvmd.sock --spare=1
+	$(SUDO) systemd-run --unit=kindtest-lvmd.service $(shell pwd)/build/lvmd --listen=/tmp/kindtest/lvmd/lvmd.sock --config=$(shell pwd)/lvmd.yaml
 
 stop-lvmd:
 	$(MAKE) -f Makefile.kindtest shutdown-kind
