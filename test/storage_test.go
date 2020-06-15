@@ -125,9 +125,30 @@ spec:
 }
 
 func testRookOperator() {
-	It("should be deployed successfully", func() {
+	It("should be deployed to ceph-hdd ns successfully", func() {
 		Eventually(func() error {
-			stdout, _, err := ExecAt(boot0, "kubectl", "--namespace=rook-ceph",
+			stdout, _, err := ExecAt(boot0, "kubectl", "--namespace=ceph-hdd",
+				"get", "deployment/rook-ceph-operator", "-o=json")
+			if err != nil {
+				return err
+			}
+
+			ss := new(appsv1.Deployment)
+			err = json.Unmarshal(stdout, ss)
+			if err != nil {
+				return err
+			}
+
+			if ss.Status.AvailableReplicas != 1 {
+				return fmt.Errorf("rook operator deployment's AvialbleReplicas is not 1: %d", int(ss.Status.ReadyReplicas))
+			}
+			return nil
+		}).Should(Succeed())
+	})
+
+	It("should be deployed to ceph-ssd ns successfully", func() {
+		Eventually(func() error {
+			stdout, _, err := ExecAt(boot0, "kubectl", "--namespace=ceph-ssd",
 				"get", "deployment/rook-ceph-operator", "-o=json")
 			if err != nil {
 				return err

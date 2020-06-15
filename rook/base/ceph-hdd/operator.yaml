@@ -4,7 +4,8 @@ metadata:
   name: rook-ceph-operator-config
   namespace: rook-ceph
 data:
-  CSI_CEPHFS_GRPC_METRICS_PORT: "9092"
+  CSI_CEPHFS_GRPC_METRICS_PORT: "9095"
+  CSI_RBD_GRPC_METRICS_PORT: "9096"
 ---
 apiVersion: apps/v1
 kind: Deployment
