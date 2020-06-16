@@ -18,7 +18,7 @@ spec:
     spec:
       containers:
         - name: alertmanager
-          image: quay.io/cybozu/prometheus:2.18.1.1
+          image: quay.io/cybozu/prometheus
           command: ["alertmanager"]
           args: ["--config.file=/etc/alertmanager.secret/alertmanager.yaml"]
           ports:
