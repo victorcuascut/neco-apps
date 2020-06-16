@@ -51,8 +51,9 @@ var _ = Describe("Test applications", func() {
 	}
 	if !withKind {
 		Context("rookOperator", testRookOperator)
+		Context("OSDPodsSpread", testOSDPodsSpreadAll)
 		Context("rookRGW", testRookRGW)
-		Context("rookRBD", testRookRBD)
+		Context("rookRBD", testRookRBDAll)
 	}
 	if doStorageTest {
 		return
