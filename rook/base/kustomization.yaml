@@ -2,7 +2,7 @@ apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 resources:
   - common/clusterrole.yaml
-  - common/crd.yaml
+  - common/resources.yaml
   - common/psp.yaml
   - ceph-hdd
   - ceph-ssd
