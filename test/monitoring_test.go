@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"reflect"
 	"sort"
@@ -223,6 +224,113 @@ func testAlertmanager() {
 			return nil
 		}).Should(Succeed())
 	})
+}
+
+func testPushgateway() {
+	bastionFQDN := testID + "-pushgateway-bastion.gcp0.dev-ne.co"
+	forestFQDN := testID + "-pushgateway-forest.gcp0.dev-ne.co"
+	manifestBase := `apiVersion: projectcontour.io/v1
+kind: HTTPProxy
+metadata:
+  name: pushgateway-bastion
+  namespace: monitoring
+  annotations:
+    kubernetes.io/ingress.class: bastion
+spec:
+  virtualhost:
+    fqdn: %s
+  routes:
+    - conditions:
+        - prefix: /
+      services:
+        - name: pushgateway
+          port: 9091
+---
+apiVersion: projectcontour.io/v1
+kind: HTTPProxy
+metadata:
+  name: pushgateway-forest
+  namespace: monitoring
+  annotations:
+    kubernetes.io/ingress.class: forest
+spec:
+  virtualhost:
+    fqdn: %s
+  routes:
+    - conditions:
+        - prefix: /
+      services:
+        - name: pushgateway
+          port: 9091
+`
+
+	It("should create HTTPProxy for Pushgateway", func() {
+		manifest := fmt.Sprintf(manifestBase, bastionFQDN, forestFQDN)
+		_, stderr, err := ExecAtWithInput(boot0, []byte(manifest), "kubectl", "apply", "-f", "-")
+		Expect(err).NotTo(HaveOccurred(), "stderr: %s", stderr)
+	})
+
+	It("should be deployed successfully", func() {
+		Eventually(func() error {
+			stdout, _, err := ExecAt(boot0, "kubectl", "--namespace=monitoring",
+				"get", "deployment/pushgateway", "-o=json")
+			if err != nil {
+				return err
+			}
+			deployment := new(appsv1.Deployment)
+			err = json.Unmarshal(stdout, deployment)
+			if err != nil {
+				return err
+			}
+
+			if int(deployment.Status.AvailableReplicas) != 1 {
+				return fmt.Errorf("AvailableReplicas is not 1: %d", int(deployment.Status.AvailableReplicas))
+			}
+			return nil
+		}).Should(Succeed())
+	})
+
+	if !withKind {
+		It("should be accessed from Bastion", func() {
+			By("getting the IP address of the contour LoadBalancer")
+			bastionIP, err := getLoadBalancerIP("ingress-bastion", "envoy")
+			Expect(err).ShouldNot(HaveOccurred())
+			Eventually(func() error {
+				stdout, stderr, err := ExecAt(boot0,
+					"curl", "-sL", "--resolve", bastionFQDN+":80:"+bastionIP, "http://"+bastionFQDN+"/-/healthy",
+					"-o", "/dev/null",
+				)
+				if err != nil {
+					return fmt.Errorf("stdout: %s, stderr: %s, err: %v", stdout, stderr, err)
+				}
+				return nil
+			}).Should(Succeed())
+		})
+
+		It("should be accessed from Forest", func() {
+			forestIP, err := getLoadBalancerIP("ingress-forest", "envoy")
+			Expect(err).ShouldNot(HaveOccurred())
+			Eventually(func() error {
+				return exec.Command("sudo", "nsenter", "-n", "-t", externalPID, "curl", "--resolve", forestFQDN+":80:"+forestIP, forestFQDN+"/-/healthy", "-m", "5").Run()
+			}).Should(Succeed())
+		})
+	}
+}
+
+func getLoadBalancerIP(namespace, service string) (string, error) {
+	stdout, stderr, err := ExecAt(boot0, "kubectl", "-n", namespace, "get", "service", service, "-o=json")
+	if err != nil {
+		return "", fmt.Errorf("unable to get %s/%s. stdout: %s, stderr: %s, err: %w", namespace, service, stdout, stderr, err)
+	}
+	svc := new(corev1.Service)
+	err = json.Unmarshal(stdout, svc)
+	if err != nil {
+		return "", fmt.Errorf("failed to unmarshal %s/%s. err: %w", namespace, service, err)
+	}
+	if len(svc.Status.LoadBalancer.Ingress) != 1 {
+		return "", fmt.Errorf("len(svc.Status.LoadBalancer.Ingress) != 1. %d", len(svc.Status.LoadBalancer.Ingress))
+	}
+	return svc.Status.LoadBalancer.Ingress[0].IP, nil
 }
 
 func testGrafanaOperator() {

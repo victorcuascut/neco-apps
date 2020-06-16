@@ -19,6 +19,8 @@ resources:
   - prometheus/statefulset.yaml
   - alertmanager/deployment.yaml
   - alertmanager/service.yaml
+  - pushgateway/deployment.yaml
+  - pushgateway/service.yaml
 configMapGenerator:
   - name: prometheus-server-conf
     files:
@@ -44,3 +46,6 @@ configMapGenerator:
   - name: alertmanager
     files:
       - alertmanager/neco.template
+imageTags:
+  - name: quay.io/cybozu/prometheus
+    newTag: 2.18.1.1
