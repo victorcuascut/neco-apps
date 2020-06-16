@@ -81,9 +81,6 @@ spec:
         - name: ROOK_UNREACHABLE_NODE_TOLERATION_SECONDS
           value: "5"
         resources:
-          limits:
-            cpu: 500m
-            memory: 256Mi
           requests:
             cpu: 100m
             memory: 256Mi
