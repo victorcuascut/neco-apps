@@ -4,8 +4,7 @@ metadata:
   name: rook-ceph-operator-config
   namespace: rook-ceph
 data:
-  CSI_CEPHFS_GRPC_METRICS_PORT: "29091"
-  CSI_CEPHFS_LIVENESS_METRICS_PORT: "29081"
+  ROOK_CSI_ENABLE_CEPHFS: "false"
   CSI_RBD_GRPC_METRICS_PORT: "29090"
   CSI_RBD_LIVENESS_METRICS_PORT: "29080"
 ---
