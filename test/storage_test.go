@@ -274,7 +274,7 @@ metadata:
   namespace: %s
 spec:
   generateBucketName: obc-poc
-  storageClassName: rook-ceph-bucket
+  storageClassName: ceph-hdd-bucket
 ---
 apiVersion: v1
 kind: Pod
@@ -435,7 +435,7 @@ spec:
   resources:
     requests:
       storage: 1Gi
-  storageClassName: rook-ceph-block
+  storageClassName: ceph-ssd-block
 ---
 apiVersion: v1
 kind: Pod

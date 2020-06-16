@@ -1,7 +1,7 @@
 apiVersion: ceph.rook.io/v1
 kind: CephBlockPool
 metadata:
-  name: cs-block-pool
+  name: ceph-ssd-block-pool
   namespace: ceph-ssd
   annotations:
     argocd.argoproj.io/sync-wave: "2"
@@ -13,16 +13,16 @@ spec:
 apiVersion: storage.k8s.io/v1
 kind: StorageClass
 metadata:
-  name: rook-ceph-block
+  name: ceph-ssd-block
   annotations:
     argocd.argoproj.io/sync-wave: "2"
 # Change "rook-ceph" provisioner prefix to match the operator namespace if needed
-provisioner: rook-ceph.rbd.csi.ceph.com
+provisioner: ceph-ssd.rbd.csi.ceph.com
 parameters:
   # clusterID is the namespace where the rook cluster is running
   clusterID: ceph-ssd
   # Ceph pool into which the RBD image shall be created
-  pool: cs-block-pool
+  pool: ceph-ssd-block-pool
 
   # RBD image format. Defaults to "2".
   imageFormat: "2"
