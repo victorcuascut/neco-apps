@@ -193,7 +193,7 @@ jobs:
           no_output_timeout: 31m
       - delete-instance
 
-  bootstrap-storage:
+  osd-pod-spread:
     docker:
       - image: google/cloud-sdk
     steps:
@@ -203,7 +203,7 @@ jobs:
           name: Test neco-apps
           command: |
             export NECO_DIR=$(pwd)/neco
-            TARGET=dctest-storage ./bin/run-test.sh
+            TARGET=dctest-osd-pod-spread ./bin/run-test.sh
           no_output_timeout: 31m
       - delete-instance
 
@@ -320,7 +320,7 @@ workflows:
       - upgrade-stage:
           requires:
             - hold
-      - bootstrap-storage:
+      - osd-pod-spread:
           requires:
             - hold
       - create-pull-request-stage:
@@ -332,6 +332,7 @@ workflows:
             - bootstrap
             - upgrade-stage
             - upgrade-release
+            - osd-pod-spread
 
   # Test with the specified neco branch.
   manual-dctest-with-neco-feature-branch:
@@ -363,11 +364,13 @@ workflows:
       - bootstrap
       - upgrade-stage
       - upgrade-release
+      - osd-pod-spread
       - create-pull-request-stage:
           requires:
             - bootstrap
             - upgrade-stage
             - upgrade-release
+            - osd-pod-spread
   release-tag:
     jobs:
       - push-release-tag:

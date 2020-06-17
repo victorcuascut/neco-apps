@@ -39,7 +39,7 @@ var _ = Describe("Test applications", func() {
 	if !withKind {
 		Context("prepareNodes", prepareNodes)
 	}
-	if doStorageTest {
+	if doOSDPodSpreadTest {
 		Context("prepareLoadPods", prepareLoadPods)
 	}
 	Context("setup", testSetup)
@@ -55,7 +55,7 @@ var _ = Describe("Test applications", func() {
 		Context("rookRGW", testRookRGW)
 		Context("rookRBD", testRookRBDAll)
 	}
-	if doStorageTest {
+	if doOSDPodSpreadTest {
 		return
 	}
 	Context("network-policy", testNetworkPolicy)
