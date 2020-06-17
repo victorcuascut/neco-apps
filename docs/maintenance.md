@@ -127,28 +127,45 @@ See: [Kubernetes controllers configuration](https://docs.projectcalico.org/refer
 
 ## rook
 
-Download the upstream manifest as follows:
+Get upstream helm chart:
 
 ```console
-$ curl -sLf -o rook/base/upstream/operator.yaml https://raw.githubusercontent.com/cybozu-go/rook/neco-release/cluster/examples/kubernetes/ceph/operator.yaml
+$ git clone https://github.com/cybozu-go/rook
+$ cd rook
+$ git checkout vX.Y.Z
+$ rm -r $GOPATH/src/github.com/cybozu-go/neco-apps/rook/base/upstream/chart
+$ cp -a cluster/charts/rook-ceph $GOPATH/src/github.com/cybozu-go/neco-apps/rook/base/upstream/chart
+```
+
+Update rook/base/values*.yaml if necessary.
+
+Regenerate base resource yaml  
+note: check number of yaml files.
+
+```console
+$ cd $GOPATH/src/github.com/cybozu-go/neco-apps/rook/base
+$ for i in clusterrole psp resources; do
+    helm template upstream/chart -f values.yaml -x templates/${i}.yaml > common/${i}.yaml
+  done
+$ for t in hdd ssd; do
+    for i in deployment role rolebinding serviceaccount; do
+      helm template upstream/chart -f values.yaml -f values-${t}.yaml -x templates/${i}.yaml --namespace ceph-${t} > ceph-${t}/${i}.yaml
+    done
+    helm template upstream/chart -f values.yaml -f values-${t}.yaml -x templates/clusterrolebinding.yaml --namespace ceph-${t} > ceph-${t}/clusterrolebinding/clusterrolebinding.yaml
+  done
 ```
 
 Then check the diffs by `git diff`.
 
 TODO:  
-Following manifests can be retrieved from upstream, after [PR](https://github.com/rook/rook/pull/5240) is merged.
-- rook/base/upstream/common.yaml
-- rook/base/ceph-ssd/rbac.yaml
-- rook/base/ceph-hdd/rbac.yaml
+After https://github.com/rook/rook/pull/5240 is merged, we have to revise above mentioned process.
 
-teleport
---------
+## teleport
 
 There is no official kubernetes manifests actively maintained for teleport.
 So, check changes in [CHANGELOG.md](https://github.com/gravitational/teleport/blob/master/CHANGELOG.md) on github.
 
-topolvm
--------
+## topolvm
 
 Check [releases](https://github.com/cybozu-go/topolvm/releases) for changes.
 
