@@ -69,6 +69,7 @@ scrape_configs:
         replacement: ${1}
         target_label: instance
   - job_name: "pushgateway"
+    honor_labels: true
     kubernetes_sd_configs:
       - role: pod
         namespaces:
