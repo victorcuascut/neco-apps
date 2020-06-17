@@ -9,3 +9,5 @@ resources:
   - rolebinding.yaml
   - serviceaccount.yaml
 namespace: ceph-ssd
+patchesStrategicMerge:
+  - operator.yaml

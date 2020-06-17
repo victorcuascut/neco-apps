@@ -10,3 +10,5 @@ resources:
   - rolebinding.yaml
   - serviceaccount.yaml
 namespace: ceph-hdd
+patchesStrategicMerge:
+  - operator.yaml
