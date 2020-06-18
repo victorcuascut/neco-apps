@@ -4,9 +4,6 @@ metadata:
   name: rook-ceph
   labels:
     control-plane: "true"
-spec:
-  finalizers:
-    - kubernetes
 ---
 apiVersion: v1
 kind: Namespace
@@ -14,9 +11,6 @@ metadata:
   name: ceph-hdd
   labels:
     control-plane: "true"
-spec:
-  finalizers:
-    - kubernetes
 ---
 apiVersion: v1
 kind: Namespace
@@ -24,6 +18,3 @@ metadata:
   name: ceph-ssd
   labels:
     control-plane: "true"
-spec:
-  finalizers:
-    - kubernetes
