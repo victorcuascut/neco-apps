@@ -42,9 +42,9 @@ spec:
         - name: CSI_ENABLE_SNAPSHOTTER
           value: "true"
         - name: CSI_PLUGIN_PRIORITY_CLASSNAME
-          value: 
+          value: ""
         - name: CSI_PROVISIONER_PRIORITY_CLASSNAME
-          value: 
+          value: ""
         - name: ROOK_CSI_ENABLE_GRPC_METRICS
           value: "true"
         - name: CSI_RBD_GRPC_METRICS_PORT

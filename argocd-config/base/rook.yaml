@@ -64,19 +64,16 @@ spec:
       name: rook-ceph-system-psp-user
       jsonPointers:
         - /rules
+    # count may be changed manually
     - group: ceph.rook.io
       kind: CephCluster
       name: ceph-ssd
       namespace: ceph-ssd
       jsonPointers:
         - /spec/storage/storageClassDeviceSets/0/count
-        - /spec/storage/storageClassDeviceSets/0/placement/topologySpreadConstraints/0/maxSkew
-        - /spec/storage/storageClassDeviceSets/0/placement/topologySpreadConstraints/1/maxSkew
     - group: ceph.rook.io
       kind: CephCluster
       name: ceph-hdd
       namespace: ceph-hdd
       jsonPointers:
         - /spec/storage/storageClassDeviceSets/0/count
-        - /spec/storage/storageClassDeviceSets/0/placement/topologySpreadConstraints/0/maxSkew
-        - /spec/storage/storageClassDeviceSets/0/placement/topologySpreadConstraints/1/maxSkew

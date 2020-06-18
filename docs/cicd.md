@@ -49,7 +49,7 @@ This repository has 4 CircleCI workflows: `main`, `daily`, `manual-dctest` and `
 
 ### `manual-dctest` workflow
 
-`manual-dctest` workflow is not executed automatically. This provides full-scale test for all branches, which can be triggered from Web UI.
+`manual-dctest` workflow is not executed automatically.  This provides full-scale test for all branches, which can be triggered from Web UI.
 
 This consists of the following 4 jobs.
 

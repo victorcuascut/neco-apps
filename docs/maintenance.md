@@ -137,6 +137,17 @@ $ rm -r $GOPATH/src/github.com/cybozu-go/neco-apps/rook/base/upstream/chart
 $ cp -a cluster/charts/rook-ceph $GOPATH/src/github.com/cybozu-go/neco-apps/rook/base/upstream/chart
 ```
 
+Download Helm used in Rook. Follow `HELM_VERSION` in the upstream configuration.
+
+```console
+$ # In rook repo directory downloaded above
+$ cat build/makelib/helm.mk | grep HELM_VERSION
+$ HELM_VERSION=X.Y.Z
+$ curl -o /tmp/helm.tar.gz https://get.helm.sh/helm-v$HELM_VERSION-linux-amd64.tar.gz
+$ tar -xvf /tmp/helm.tar.gz --directory=/tmp
+$ cp /tmp/linux-amd64/helm /usr/local/bin
+```
+
 Update rook/base/values*.yaml if necessary.
 
 Regenerate base resource yaml  
