@@ -34,8 +34,6 @@ metadata:
   name: ceph-hdd-bucket
   annotations:
     argocd.argoproj.io/sync-wave: "2"
-  labels:
-    aws-s3/object: ""
 provisioner: ceph-hdd.ceph.rook.io/bucket
 parameters:
   objectStoreName: ceph-hdd-object-store
