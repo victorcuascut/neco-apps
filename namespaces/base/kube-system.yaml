@@ -6,6 +6,3 @@ metadata:
     openpolicyagent.org/webhook: ignore
     control-plane: "true"
     topolvm.cybozu.com/webhook: ignore
-spec:
-  finalizers:
-    - kubernetes

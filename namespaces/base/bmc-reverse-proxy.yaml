@@ -4,6 +4,3 @@ metadata:
   name: bmc-reverse-proxy
   labels:
     control-plane: "true"
-spec:
-  finalizers:
-    - kubernetes

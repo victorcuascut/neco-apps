@@ -4,6 +4,3 @@ metadata:
   name: monitoring
   labels:
     control-plane: "true"
-spec:
-  finalizers:
-    - kubernetes
