@@ -38,5 +38,4 @@ provisioner: ceph-hdd.ceph.rook.io/bucket
 parameters:
   objectStoreName: ceph-hdd-object-store
   objectStoreNamespace: ceph-hdd
-  region: us-west-1
 reclaimPolicy: Delete
