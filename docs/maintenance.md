@@ -130,6 +130,7 @@ See: [Kubernetes controllers configuration](https://docs.projectcalico.org/refer
 Get upstream helm chart:
 
 ```console
+$ cd $GOPATH/src/github.com/cybozu-go
 $ git clone https://github.com/cybozu-go/rook
 $ cd rook
 $ git checkout vX.Y.Z
@@ -140,12 +141,10 @@ $ cp -a cluster/charts/rook-ceph $GOPATH/src/github.com/cybozu-go/neco-apps/rook
 Download Helm used in Rook. Follow `HELM_VERSION` in the upstream configuration.
 
 ```console
-$ # In rook repo directory downloaded above
-$ cat build/makelib/helm.mk | grep HELM_VERSION
+# Check the Helm version, in rook repo directory downloaded above
+$ cat build/makelib/helm.mk | grep ^HELM_VERSION
 $ HELM_VERSION=X.Y.Z
-$ curl -o /tmp/helm.tar.gz https://get.helm.sh/helm-v$HELM_VERSION-linux-amd64.tar.gz
-$ tar -xvf /tmp/helm.tar.gz --directory=/tmp
-$ cp /tmp/linux-amd64/helm /usr/local/bin
+$ curl -sSLf https://get.helm.sh/helm-v$HELM_VERSION-linux-amd64.tar.gz | sudo tar -C /usr/local/bin linux-amd64/helm --strip-components 1 -xzf -
 ```
 
 Update rook/base/values*.yaml if necessary.
