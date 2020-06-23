@@ -36,7 +36,6 @@ spec:
             - key: cke.cybozu.com/role
               operator: Equal
               value: storage
-              effect: NoExecute
           topologySpreadConstraints:
             - maxSkew: 1
               topologyKey: topology.kubernetes.io/zone
