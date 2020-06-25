@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: ingress-health-http
+  namespace: monitoring
+  labels:
+    app.kubernetes.io/name: ingress-health-http
+spec:
+  type: ClusterIP
+  selector:
+    app.kubernetes.io/name: ingress-health
+  ports:
+    - name: http
+      port: 80
+      protocol: TCP
+      targetPort: 8080
