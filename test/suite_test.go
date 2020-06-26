@@ -74,6 +74,7 @@ var _ = Describe("Test applications", func() {
 	Context("sandbox-grafana", testSandboxGrafana)
 	Context("alertmanager", testAlertmanager)
 	Context("pushgateway", testPushgateway)
+	Context("ingress-health", testIngressHealth)
 	Context("prometheus-metrics", testPrometheusMetrics)
 	Context("metrics-server", testMetricsServer)
 	if !withKind {

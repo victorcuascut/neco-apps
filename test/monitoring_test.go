@@ -317,6 +317,34 @@ spec:
 	}
 }
 
+func testIngressHealth() {
+	It("should be deployed successfully", func() {
+		By("for ingress-health (testhttpd)")
+		Eventually(func() error {
+			stdout, _, err := ExecAt(boot0, "kubectl", "--namespace=monitoring",
+				"get", "deployment/ingress-health", "-o=json")
+			if err != nil {
+				return err
+			}
+			deployment := new(appsv1.Deployment)
+			err = json.Unmarshal(stdout, deployment)
+			if err != nil {
+				return err
+			}
+
+			if int(deployment.Status.AvailableReplicas) != 1 {
+				return fmt.Errorf("AvailableReplicas is not 1: %d", int(deployment.Status.AvailableReplicas))
+			}
+
+			stdout, stderr, err := ExecAt(boot0, "kubectl", "-n", "monitoring", "get", "service", "ingress-health-http")
+			if err != nil {
+				return fmt.Errorf("unable to get ingress-health-http. stdout: %s, stderr: %s, err: %w", stdout, stderr, err)
+			}
+			return nil
+		}).Should(Succeed())
+	})
+}
+
 func getLoadBalancerIP(namespace, service string) (string, error) {
 	stdout, stderr, err := ExecAt(boot0, "kubectl", "-n", namespace, "get", "service", service, "-o=json")
 	if err != nil {
