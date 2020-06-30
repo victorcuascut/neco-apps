@@ -15,6 +15,7 @@ The sync order of applications can be managed with the `argocd.argoproj.io/sync-
 | ingress              | 5    |
 | teleport             | 5    |
 | topolvm              | 5    |
+| unbound              | 5    |
 | elastic              | 6    |
 | monitoring           | 6    |
 | sandbox              | 6    |
