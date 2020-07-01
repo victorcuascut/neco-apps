@@ -37,7 +37,6 @@ test-alert-rules:
 	promtool test rules alert_test/*.yaml
 
 kustomize-check:
-	test "$$(ls ../argocd-config/base)" = "$$(ls ../argocd-config/overlays/stage0)"
 	./kustomize-check.sh
 
 code-check:
