@@ -10,7 +10,7 @@ spec:
           image: quay.io/cybozu/grafana-operator:3.3.0.1
           args:
             - --grafana-image=quay.io/cybozu/grafana
-            - --grafana-image-tag=7.0.3.1
+            - --grafana-image-tag=7.0.4.1
             - --scan-all
           env:
             - name: NO_PROXY

@@ -7,6 +7,8 @@ spec:
   sourceRepos:
   - '*'
   destinations:
+  - namespace: app-comconv-earthlab
+    server: '*'
   - namespace: app-gorush
     server: '*'
   - namespace: app-kodama

@@ -185,5 +185,5 @@ Download the upstream manifest as follows:
 $ git clone https://github.com/cybozu-go/topolvm
 $ cd topolvm
 $ git checkout vX.Y.Z
-$ cp deploy/manifests/*.yaml $GOPATH/src/github.com/cybozu-go/neco-apps/topolvm/base/upstream
+$ cp -r deploy/manifests/* $GOPATH/src/github.com/cybozu-go/neco-apps/topolvm/base/upstream
 ```
