@@ -33,6 +33,10 @@ var dcJobs = []string{
 	"node-exporter",
 	"sabakan",
 }
+var (
+	bastionFQDN = testID + "-pushgateway-bastion.gcp0.dev-ne.co"
+	forestFQDN  = testID + "-pushgateway-forest.gcp0.dev-ne.co"
+)
 
 func testMachinesEndpoints() {
 	It("should be deployed successfully", func() {
@@ -227,8 +231,6 @@ func testAlertmanager() {
 }
 
 func testPushgateway() {
-	bastionFQDN := testID + "-pushgateway-bastion.gcp0.dev-ne.co"
-	forestFQDN := testID + "-pushgateway-forest.gcp0.dev-ne.co"
 	manifestBase := `apiVersion: projectcontour.io/v1
 kind: HTTPProxy
 metadata:
@@ -372,13 +374,18 @@ func testUnboundService() {
 
 		By("confirming that nslookup from boot server is successfull")
 		targets := []string{
-			testID + "-pushgateway-bastion.gcp0.dev-ne.co",
-			testID + "-pushgateway-forest.gcp0.dev-ne.co",
+			bastionFQDN,
+			forestFQDN,
 		}
-		for _, target := range targets {
-			stdout, stderr, err := ExecAt(boot0, "nslookup", target, ip)
-			Expect(err).NotTo(HaveOccurred(), "stdout: %s, stderr: %s, err: %v", stdout, stderr, err)
-		}
+		Eventually(func() error {
+			for _, target := range targets {
+				stdout, stderr, err := ExecAt(boot0, "nslookup", target, ip)
+				if err != nil {
+					return fmt.Errorf("target: %s, stdout: %s, stderr: %s, err: %v", target, stdout, stderr, err)
+				}
+			}
+			return nil
+		}).Should(Succeed())
 	})
 }
 
