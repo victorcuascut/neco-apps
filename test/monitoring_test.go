@@ -372,20 +372,22 @@ func testUnboundService() {
 			return nil
 		}).Should(Succeed())
 
-		By("confirming that nslookup from boot server is successfull")
-		targets := []string{
-			bastionFQDN,
-			forestFQDN,
-		}
-		Eventually(func() error {
-			for _, target := range targets {
-				stdout, stderr, err := ExecAt(boot0, "nslookup", target, ip)
-				if err != nil {
-					return fmt.Errorf("target: %s, stdout: %s, stderr: %s, err: %v", target, stdout, stderr, err)
-				}
+		if !withKind {
+			By("confirming that nslookup from boot server is successfull")
+			targets := []string{
+				bastionFQDN,
+				forestFQDN,
 			}
-			return nil
-		}).Should(Succeed())
+			Eventually(func() error {
+				for _, target := range targets {
+					stdout, stderr, err := ExecAt(boot0, "nslookup", target, ip)
+					if err != nil {
+						return fmt.Errorf("target: %s, stdout: %s, stderr: %s, err: %v", target, stdout, stderr, err)
+					}
+				}
+				return nil
+			}).Should(Succeed())
+		}
 	})
 }
 
