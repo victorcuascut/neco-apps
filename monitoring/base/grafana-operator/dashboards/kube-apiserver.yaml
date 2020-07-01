@@ -22,8 +22,8 @@ spec:
         "editable": true,
         "gnetId": null,
         "graphTooltip": 0,
-        "id": 16,
-        "iteration": 1578380569119,
+        "id": 1,
+        "iteration": 1593581894173,
         "links": [],
         "panels": [
             {
@@ -36,6 +36,12 @@ spec:
                     "#d44a3a"
                 ],
                 "datasource": "$datasource",
+                "fieldConfig": {
+                    "defaults": {
+                        "custom": {}
+                    },
+                    "overrides": []
+                },
                 "format": "none",
                 "gauge": {
                     "maxValue": 100,
@@ -67,7 +73,6 @@ spec:
                 "maxDataPoints": 100,
                 "nullPointMode": "connected",
                 "nullText": null,
-                "options": {},
                 "postfix": "",
                 "postfixFontSize": "50%",
                 "prefix": "",
@@ -114,6 +119,12 @@ spec:
                 "dashLength": 10,
                 "dashes": false,
                 "datasource": "$datasource",
+                "fieldConfig": {
+                    "defaults": {
+                        "custom": {}
+                    },
+                    "overrides": []
+                },
                 "fill": 1,
                 "fillGradient": 0,
                 "gridPos": {
@@ -122,6 +133,7 @@ spec:
                     "x": 4,
                     "y": 0
                 },
+                "hiddenSeries": false,
                 "id": 3,
                 "legend": {
                     "alignAsTable": false,
@@ -227,6 +239,12 @@ spec:
                 "dashLength": 10,
                 "dashes": false,
                 "datasource": "$datasource",
+                "fieldConfig": {
+                    "defaults": {
+                        "custom": {}
+                    },
+                    "overrides": []
+                },
                 "fill": 1,
                 "fillGradient": 0,
                 "gridPos": {
@@ -235,6 +253,7 @@ spec:
                     "x": 14,
                     "y": 0
                 },
+                "hiddenSeries": false,
                 "id": 4,
                 "legend": {
                     "alignAsTable": "true",
@@ -265,8 +284,9 @@ spec:
                 "steppedLine": false,
                 "targets": [
                     {
-                        "expr": "histogram_quantile(0.99, sum(rate(apiserver_request_latency_seconds_bucket{job=\"kubernetes-apiservers\", instance=~\"$instance\", verb!=\"WATCH\"}[5m])) by (verb, le))",
+                        "expr": "histogram_quantile(0.99, sum(rate(apiserver_request_duration_seconds_bucket{job=\"kubernetes-apiservers\", instance=~\"$instance\", verb!=\"WATCH\"}[5m])) by (verb, le))",
                         "format": "time_series",
+                        "interval": "",
                         "intervalFactor": 2,
                         "legendFormat": "{{verb}}",
                         "refId": "A"
@@ -319,6 +339,12 @@ spec:
                 "dashLength": 10,
                 "dashes": false,
                 "datasource": "$datasource",
+                "fieldConfig": {
+                    "defaults": {
+                        "custom": {}
+                    },
+                    "overrides": []
+                },
                 "fill": 1,
                 "fillGradient": 0,
                 "gridPos": {
@@ -327,6 +353,7 @@ spec:
                     "x": 0,
                     "y": 7
                 },
+                "hiddenSeries": false,
                 "id": 5,
                 "legend": {
                     "alignAsTable": false,
@@ -411,6 +438,12 @@ spec:
                 "dashLength": 10,
                 "dashes": false,
                 "datasource": "$datasource",
+                "fieldConfig": {
+                    "defaults": {
+                        "custom": {}
+                    },
+                    "overrides": []
+                },
                 "fill": 1,
                 "fillGradient": 0,
                 "gridPos": {
@@ -419,6 +452,7 @@ spec:
                     "x": 8,
                     "y": 7
                 },
+                "hiddenSeries": false,
                 "id": 6,
                 "legend": {
                     "alignAsTable": false,
@@ -503,6 +537,12 @@ spec:
                 "dashLength": 10,
                 "dashes": false,
                 "datasource": "$datasource",
+                "fieldConfig": {
+                    "defaults": {
+                        "custom": {}
+                    },
+                    "overrides": []
+                },
                 "fill": 1,
                 "fillGradient": 0,
                 "gridPos": {
@@ -511,6 +551,7 @@ spec:
                     "x": 16,
                     "y": 7
                 },
+                "hiddenSeries": false,
                 "id": 7,
                 "legend": {
                     "alignAsTable": false,
@@ -595,6 +636,12 @@ spec:
                 "dashLength": 10,
                 "dashes": false,
                 "datasource": "$datasource",
+                "fieldConfig": {
+                    "defaults": {
+                        "custom": {}
+                    },
+                    "overrides": []
+                },
                 "fill": 1,
                 "fillGradient": 0,
                 "gridPos": {
@@ -603,6 +650,7 @@ spec:
                     "x": 0,
                     "y": 14
                 },
+                "hiddenSeries": false,
                 "id": 11,
                 "legend": {
                     "alignAsTable": false,
@@ -687,6 +735,12 @@ spec:
                 "dashLength": 10,
                 "dashes": false,
                 "datasource": "$datasource",
+                "fieldConfig": {
+                    "defaults": {
+                        "custom": {}
+                    },
+                    "overrides": []
+                },
                 "fill": 1,
                 "fillGradient": 0,
                 "gridPos": {
@@ -695,6 +749,7 @@ spec:
                     "x": 8,
                     "y": 14
                 },
+                "hiddenSeries": false,
                 "id": 12,
                 "legend": {
                     "alignAsTable": false,
@@ -779,6 +834,12 @@ spec:
                 "dashLength": 10,
                 "dashes": false,
                 "datasource": "$datasource",
+                "fieldConfig": {
+                    "defaults": {
+                        "custom": {}
+                    },
+                    "overrides": []
+                },
                 "fill": 1,
                 "fillGradient": 0,
                 "gridPos": {
@@ -787,6 +848,7 @@ spec:
                     "x": 16,
                     "y": 14
                 },
+                "hiddenSeries": false,
                 "id": 13,
                 "legend": {
                     "alignAsTable": false,
@@ -867,7 +929,7 @@ spec:
             }
         ],
         "refresh": "",
-        "schemaVersion": 19,
+        "schemaVersion": 25,
         "style": "dark",
         "tags": [
             "kubernetes",
@@ -877,7 +939,7 @@ spec:
             "list": [
                 {
                     "current": {
-                        "selected": true,
+                        "selected": false,
                         "text": "prometheus",
                         "value": "prometheus"
                     },
@@ -896,6 +958,7 @@ spec:
                 {
                     "allValue": null,
                     "current": {
+                        "selected": false,
                         "text": "All",
                         "value": "$__all"
                     },
@@ -926,7 +989,6 @@ spec:
         },
         "timepicker": {
             "refresh_intervals": [
-                "5s",
                 "10s",
                 "30s",
                 "1m",
@@ -952,5 +1014,5 @@ spec:
         "timezone": "browser",
         "title": "Kube API Server",
         "uid": "eswbt59QCroA3XLdKFvdOHlKB8Iks3h7d2ohstxr",
-        "version": 4
+        "version": 2
     }
