@@ -1,6 +1,7 @@
 package test
 
 import (
+	"bytes"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -381,6 +382,25 @@ func testUnboundService() {
 			Eventually(func() error {
 				for _, target := range targets {
 					stdout, stderr, err := ExecAt(boot0, "nslookup", target, ip)
+					if err != nil {
+						return fmt.Errorf("target: %s, stdout: %s, stderr: %s, err: %v", target, stdout, stderr, err)
+					}
+				}
+				return nil
+			}).Should(Succeed())
+
+			By("setting dns address to neco config")
+			stdout, stderr, err := ExecAt(boot0, "neco", "config", "set", "dns", ip)
+			Expect(err).NotTo(HaveOccurred(), "stdout: %s, stderr: %s, err: %v", stdout, stderr, err)
+
+			stdout, stderr, err = ExecAt(boot0, "neco", "config", "get", "dns")
+			Expect(err).NotTo(HaveOccurred(), "stdout: %s, stderr: %s, err: %v", stdout, stderr, err)
+			Expect(bytes.TrimSpace(stdout)).To(Equal(ip))
+
+			By("confirming that dns is set")
+			Eventually(func() error {
+				for _, target := range targets {
+					stdout, stderr, err := ExecAt(boot0, "nslookup", target)
 					if err != nil {
 						return fmt.Errorf("target: %s, stdout: %s, stderr: %s, err: %v", target, stdout, stderr, err)
 					}
