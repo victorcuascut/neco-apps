@@ -24,3 +24,4 @@ patchesStrategicMerge:
 - teleport.yaml
 - topolvm.yaml
 - rook.yaml
+- unbound.yaml

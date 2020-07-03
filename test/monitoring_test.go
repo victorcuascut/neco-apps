@@ -33,6 +33,10 @@ var dcJobs = []string{
 	"node-exporter",
 	"sabakan",
 }
+var (
+	bastionFQDN = testID + "-pushgateway-bastion.gcp0.dev-ne.co"
+	forestFQDN  = testID + "-pushgateway-forest.gcp0.dev-ne.co"
+)
 
 func testMachinesEndpoints() {
 	It("should be deployed successfully", func() {
@@ -227,8 +231,6 @@ func testAlertmanager() {
 }
 
 func testPushgateway() {
-	bastionFQDN := testID + "-pushgateway-bastion.gcp0.dev-ne.co"
-	forestFQDN := testID + "-pushgateway-forest.gcp0.dev-ne.co"
 	manifestBase := `apiVersion: projectcontour.io/v1
 kind: HTTPProxy
 metadata:
