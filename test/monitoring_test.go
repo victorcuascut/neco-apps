@@ -347,50 +347,6 @@ func testIngressHealth() {
 	})
 }
 
-func testUnboundService() {
-	It("should be deployed successfully", func() {
-		var ip string
-		By("confirming that unbound is exported")
-		Eventually(func() error {
-			stdout, stderr, err := ExecAt(boot0, "kubectl", "--namespace=internet-egress",
-				"get", "service/unbound-bastion", "-o=json")
-			if err != nil {
-				return fmt.Errorf("stdout: %s, stderr: %s, err: %v", stdout, stderr, err)
-			}
-			service := new(corev1.Service)
-			err = json.Unmarshal(stdout, service)
-			if err != nil {
-				return fmt.Errorf("stdout: %s, stderr: %s, err: %v", stdout, stderr, err)
-			}
-
-			if len(service.Status.LoadBalancer.Ingress) != 1 {
-				return fmt.Errorf("unable to get LoadBalancer's IP address. stdout: %s, stderr: %s, err: %w", stdout, stderr, err)
-			}
-
-			ip = service.Status.LoadBalancer.Ingress[0].IP
-
-			return nil
-		}).Should(Succeed())
-
-		if !withKind {
-			By("confirming that nslookup from boot server is successfull")
-			targets := []string{
-				bastionFQDN,
-				forestFQDN,
-			}
-			Eventually(func() error {
-				for _, target := range targets {
-					stdout, stderr, err := ExecAt(boot0, "nslookup", target, ip)
-					if err != nil {
-						return fmt.Errorf("target: %s, stdout: %s, stderr: %s, err: %v", target, stdout, stderr, err)
-					}
-				}
-				return nil
-			}).Should(Succeed())
-		}
-	})
-}
-
 func getLoadBalancerIP(namespace, service string) (string, error) {
 	stdout, stderr, err := ExecAt(boot0, "kubectl", "-n", namespace, "get", "service", service, "-o=json")
 	if err != nil {
