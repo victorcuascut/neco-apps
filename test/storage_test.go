@@ -147,6 +147,7 @@ func testRookOperator() {
 				return nil
 			}).Should(Succeed())
 		})
+
 		It("should deploy ceph tools to "+ns+" correctly", func() {
 			Eventually(func() error {
 				stdout, _, err := ExecAt(boot0, "kubectl", "--namespace="+ns,
@@ -162,7 +163,7 @@ func testRookOperator() {
 				}
 
 				if deploy.Status.AvailableReplicas != 1 {
-					return fmt.Errorf("rook operator deployment's AvialbleReplicas is not 1: %d", int(deploy.Status.ReadyReplicas))
+					return fmt.Errorf("rook ceph tools deployment's AvialbleReplicas is not 1: %d", int(deploy.Status.ReadyReplicas))
 				}
 
 				stdout, _, err = ExecAt(boot0, "kubectl", "get", "pod", "--namespace="+ns, "-l", "app=rook-ceph-tools", "-o=json")
