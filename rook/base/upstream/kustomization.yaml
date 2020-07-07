@@ -6,3 +6,14 @@ imageTags:
   - name: rook/ceph
     newName: quay.io/cybozu/rook
     newTag: 1.3.4.1
+patchesJSON6902:
+- target:
+    group: apps
+    version: v1
+    kind: Deployment
+    name: rook-ceph-tools
+    namespace: rook-ceph
+  patch: |-
+    - op: add
+      path: /metadata/annotations
+      value: { "argocd.argoproj.io/sync-wave": "2" }
