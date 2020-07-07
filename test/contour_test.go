@@ -20,6 +20,7 @@ func testContour() {
 	It("should create test-ingress namespace", func() {
 		ExecSafeAt(boot0, "kubectl", "delete", "namespace", "test-ingress", "--ignore-not-found=true")
 		ExecSafeAt(boot0, "kubectl", "create", "namespace", "test-ingress")
+		ExecSafeAt(boot0, "kubectl", "annotate", "namespaces", "test-ingress", "i-am-sure-to-delete=test-ingress")
 	})
 
 	It("should be deployed successfully", func() {

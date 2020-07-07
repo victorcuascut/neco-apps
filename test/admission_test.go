@@ -141,4 +141,20 @@ spec:
 			"kubectl", "apply", "-f", "-")
 		Expect(err).To(HaveOccurred(), "stdout: %s, stderr: %s, err: %v", stdout, stderr, err)
 	})
+
+	It("should validate deletion", func() {
+		By("trying to delete a namespace")
+		_, _, err := ExecAt(boot0, "kubectl", "delete", "namespace", "internet-egress")
+		Expect(err).Should(HaveOccurred())
+
+		By("trying to delete a CRD")
+		_, _, err = ExecAt(boot0, "kubectl", "delete", "crd", "applications.argoproj.io")
+		Expect(err).Should(HaveOccurred())
+
+		if !withKind {
+			By("trying to delete a CephCluster")
+			_, _, err := ExecAt(boot0, "kubectl", "delete", "-n", "ceph-hdd", "cephclusters.ceph.rook.io", "ceph-hdd")
+			Expect(err).Should(HaveOccurred())
+		}
+	})
 }

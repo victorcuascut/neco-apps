@@ -122,3 +122,39 @@ webhooks:
     - UPDATE
     resources:
     - applications
+- name: vdelete.kb.io
+  clientConfig:
+    service:
+      name: neco-admission
+      namespace: kube-system
+      path: /validate-delete
+  failurePolicy: Fail
+  matchPolicy: Equivalent
+  rules:
+  - apiGroups:
+    - apiextensions.k8s.io
+    apiVersions:
+    - v1
+    - v1beta1
+    operations:
+    - DELETE
+    resources:
+    - customresourcedefinitions
+  - apiGroups:
+    - ""
+    apiVersions:
+    - v1
+    operations:
+    - DELETE
+    resources:
+    - namespaces
+  - apiGroups:
+    - ceph.rook.io
+    apiVersions:
+    - v1
+    operations:
+    - DELETE
+    resources:
+    - cephblockpools
+    - cephclusters
+    - cephobjectstores
