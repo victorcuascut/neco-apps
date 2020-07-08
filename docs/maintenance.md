@@ -170,6 +170,14 @@ Then check the diffs by `git diff`.
 TODO:  
 After https://github.com/rook/rook/pull/5240 is merged, we have to revise above mentioned process.
 
+Update manifest for Ceph toolbox.
+Assume `cybozu-go/rook` is updated in the above procedure.
+
+```console
+$ cd $GOPATH/src/github.com/cybozu-go/neco-apps/
+$ cp $GOPATH/src/github.com/cybozu-go/rook/cluster/examples/kubernetes/ceph/toolbox.yaml rook/base/upstream/
+```
+
 ## teleport
 
 There is no official kubernetes manifests actively maintained for teleport.
