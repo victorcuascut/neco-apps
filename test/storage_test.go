@@ -125,47 +125,67 @@ spec:
 }
 
 func testRookOperator() {
-	It("should be deployed to ceph-hdd ns successfully", func() {
-		Eventually(func() error {
-			stdout, _, err := ExecAt(boot0, "kubectl", "--namespace=ceph-hdd",
-				"get", "deployment/rook-ceph-operator", "-o=json")
-			if err != nil {
-				return err
-			}
+	nss := []string{"ceph-hdd", "ceph-ssd"}
+	for _, ns := range nss {
+		It("should deploy rook operator to "+ns+" ns successfully", func() {
+			Eventually(func() error {
+				stdout, _, err := ExecAt(boot0, "kubectl", "--namespace="+ns,
+					"get", "deployment/rook-ceph-operator", "-o=json")
+				if err != nil {
+					return err
+				}
 
-			ss := new(appsv1.Deployment)
-			err = json.Unmarshal(stdout, ss)
-			if err != nil {
-				return err
-			}
+				deploy := new(appsv1.Deployment)
+				err = json.Unmarshal(stdout, deploy)
+				if err != nil {
+					return err
+				}
 
-			if ss.Status.AvailableReplicas != 1 {
-				return fmt.Errorf("rook operator deployment's AvialbleReplicas is not 1: %d", int(ss.Status.ReadyReplicas))
-			}
-			return nil
-		}).Should(Succeed())
-	})
+				if deploy.Status.AvailableReplicas != 1 {
+					return fmt.Errorf("rook operator deployment's AvialbleReplicas is not 1: %d", int(deploy.Status.ReadyReplicas))
+				}
+				return nil
+			}).Should(Succeed())
+		})
 
-	It("should be deployed to ceph-ssd ns successfully", func() {
-		Eventually(func() error {
-			stdout, _, err := ExecAt(boot0, "kubectl", "--namespace=ceph-ssd",
-				"get", "deployment/rook-ceph-operator", "-o=json")
-			if err != nil {
-				return err
-			}
+		It("should deploy ceph tools to "+ns+" correctly", func() {
+			Eventually(func() error {
+				stdout, _, err := ExecAt(boot0, "kubectl", "--namespace="+ns,
+					"get", "deployment/rook-ceph-tools", "-o=json")
+				if err != nil {
+					return err
+				}
 
-			ss := new(appsv1.Deployment)
-			err = json.Unmarshal(stdout, ss)
-			if err != nil {
-				return err
-			}
+				deploy := new(appsv1.Deployment)
+				err = json.Unmarshal(stdout, deploy)
+				if err != nil {
+					return err
+				}
 
-			if ss.Status.AvailableReplicas != 1 {
-				return fmt.Errorf("rook operator deployment's AvialbleReplicas is not 1: %d", int(ss.Status.ReadyReplicas))
-			}
-			return nil
-		}).Should(Succeed())
-	})
+				if deploy.Status.AvailableReplicas != 1 {
+					return fmt.Errorf("rook ceph tools deployment's AvialbleReplicas is not 1: %d", int(deploy.Status.ReadyReplicas))
+				}
+
+				stdout, _, err = ExecAt(boot0, "kubectl", "get", "pod", "--namespace="+ns, "-l", "app=rook-ceph-tools", "-o=json")
+				if err != nil {
+					return err
+				}
+
+				pods := new(corev1.PodList)
+				err = json.Unmarshal(stdout, pods)
+				if err != nil {
+					return err
+				}
+
+				podName := pods.Items[0].Name
+				_, _, err = ExecAt(boot0, "kubectl", "exec", "--namespace="+ns, podName, "--", "ceph", "status")
+				if err != nil {
+					return err
+				}
+				return nil
+			}).Should(Succeed())
+		})
+	}
 }
 
 func testOSDPodsSpreadAll() {
