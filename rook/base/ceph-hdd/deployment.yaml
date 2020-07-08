@@ -30,7 +30,7 @@ spec:
         - name: ROOK_HOSTPATH_REQUIRES_PRIVILEGED
           value: "false"
         - name: ROOK_LOG_LEVEL
-          value: INFO
+          value: DEBUG
         - name: ROOK_ENABLE_SELINUX_RELABELING
           value: "true"
         - name: ROOK_DISABLE_DEVICE_HOTPLUG
@@ -53,6 +53,8 @@ spec:
           value: "19080"
         - name: CSI_FORCE_CEPHFS_KERNEL_CLIENT
           value: "true"
+        - name: CSI_LOG_LEVEL
+          value: "4"
         - name: ROOK_ENABLE_FLEX_DRIVER
           value: "false"
         - name: ROOK_ENABLE_DISCOVERY_DAEMON
