@@ -46,17 +46,12 @@ var _ = Describe("Test applications", func() {
 	if doBootstrap {
 		return
 	}
+	if doOSDPodSpreadTest {
+		Context("OSDPodsSpread", testOSDPodsSpreadAll)
+		return
+	}
 	if doReboot {
 		Context("reboot", testRebootAllNodes)
-	}
-	if !withKind {
-		Context("rookOperator", testRookOperator)
-		Context("OSDPodsSpread", testOSDPodsSpreadAll)
-		Context("rookRGW", testRookRGW)
-		Context("rookRBD", testRookRBDAll)
-	}
-	if doOSDPodSpreadTest {
-		return
 	}
 	Context("network-policy", testNetworkPolicy)
 	Context("metallb", testMetalLB)
@@ -91,5 +86,10 @@ var _ = Describe("Test applications", func() {
 	}
 	if !withKind {
 		Context("local-pv-provisioner", testLocalPVProvisioner)
+	}
+	if !withKind {
+		Context("rookOperator", testRookOperator)
+		Context("rookRGW", testRookRGW)
+		Context("rookRBD", testRookRBDAll)
 	}
 })
