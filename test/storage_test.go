@@ -270,6 +270,7 @@ func testRookRGW() {
 	It("should create test-rook-rgw namespace", func() {
 		ExecSafeAt(boot0, "kubectl", "delete", "namespace", "test-rook-rgw", "--ignore-not-found=true")
 		ExecSafeAt(boot0, "kubectl", "create", "namespace", "test-rook-rgw")
+		ExecSafeAt(boot0, "kubectl", "annotate", "namespaces", "test-rook-rgw", "i-am-sure-to-delete=test-rook-rgw")
 	})
 
 	It("should be used from a POD with a s3 client", func() {
@@ -342,6 +343,7 @@ func testRookRBD(storageClassName string) {
 	It("should create "+ns+" namespace", func() {
 		ExecSafeAt(boot0, "kubectl", "delete", "namespace", ns, "--ignore-not-found=true")
 		ExecSafeAt(boot0, "kubectl", "create", "namespace", ns)
+		ExecSafeAt(boot0, "kubectl", "annotate", "namespaces", ns, "i-am-sure-to-delete="+ns)
 	})
 
 	It("should be mounted to a path specified on a POD", func() {
