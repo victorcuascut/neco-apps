@@ -16,6 +16,8 @@ kind: NetworkPolicy
 metadata:
   name: egress-bmc-allow
   namespace: bmc-reverse-proxy
+  annotations:
+    argocd.argoproj.io/sync-wave: "1"
 spec:
   order: 500.0
   types:
