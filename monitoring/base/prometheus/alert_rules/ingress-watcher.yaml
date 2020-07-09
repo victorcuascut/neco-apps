@@ -1,0 +1,39 @@
+groups:
+  - name: ingress-watcher
+    rules:
+      - alert: GlobalHTTPDown
+        expr: |
+          absent(ingresswatcher_http_get_successful_total{code="200 OK",path=~"http://ingress-health-global.monitoring"} == 1)
+        labels:
+          severity: critical
+        for: 10m
+        annotations:
+          summary: HTTP ingress for the global network is down.
+          runbook: Please consider to find root causes, and solve the problems.
+      - alert: GlobalHTTPSDown
+        expr: |
+          absent(ingresswatcher_http_get_successful_total{code="200 OK",path=~"https://ingress-health-global.monitoring"} == 1)
+        labels:
+          severity: critical
+        for: 10m
+        annotations:
+          summary: HTTPS ingress for the global network is down.
+          runbook: Please consider to find root causes, and solve the problems.
+      - alert: BastionHTTPDown
+        expr: |
+          absent(ingresswatcher_http_get_successful_total{code="200 OK",path=~"http://ingress-health-bastion.monitoring"} == 1)
+        labels:
+          severity: critical
+        for: 10m
+        annotations:
+          summary: HTTP ingress for the bastion network is down.
+          runbook: Please consider to find root causes, and solve the problems.
+      - alert: BastionHTTPSDown
+        expr: |
+          absent(ingresswatcher_http_get_successful_total{code="200 OK",path=~"https://ingress-health-bastion.monitoring"} == 1)
+        labels:
+          severity: critical
+        for: 10m
+        annotations:
+          summary: HTTPS ingress for the bastion network is down.
+          runbook: Please consider to find root causes, and solve the problems.
