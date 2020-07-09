@@ -89,11 +89,11 @@ commands:
                 command: cp ./neco/bin/env ./bin/env
                 when: always
       - run:
-          name: Set the instance lifetime to 10 minutes
+          name: Set the instance lifetime
           command: |
             . ./bin/env
             $GCLOUD compute instances add-metadata ${INSTANCE_NAME} --zone ${ZONE} \
-              --metadata shutdown-at=$(date -Iseconds -d+10minutes)
+              --metadata shutdown-at=$(date -Iseconds -d+30minutes)
           when: on_fail
       - notify-slack-to-extend
       - run:
