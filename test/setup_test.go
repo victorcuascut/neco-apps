@@ -131,6 +131,22 @@ func prepareNodes() {
 	})
 }
 
+func createNamespaceIfNotExists(ns string) {
+	_, _, err := ExecAt(boot0, "kubectl", "get", "namespace", ns)
+	if err == nil {
+		return
+	}
+
+	ExecSafeAt(boot0, "kubectl", "create", "namespace", ns)
+	Eventually(func() error {
+		stdout, stderr, err := ExecAt(boot0, "kubectl", "get", "sa", "default", "-n", ns)
+		if err != nil {
+			return fmt.Errorf("stdout: %s, stderr: %s, err: %v", stdout, stderr, err)
+		}
+		return nil
+	}).Should(Succeed())
+}
+
 // testSetup tests setup of Argo CD
 func testSetup() {
 	if !doUpgrade {
@@ -146,10 +162,7 @@ func testSetup() {
 			}
 
 			By("creating namespace and secrets for external-dns")
-			_, _, err = ExecAt(boot0, "kubectl", "get", "namespace", "external-dns")
-			if err != nil {
-				ExecSafeAt(boot0, "kubectl", "create", "namespace", "external-dns")
-			}
+			createNamespaceIfNotExists("external-dns")
 			_, _, err = ExecAt(boot0, "kubectl", "--namespace=external-dns", "get", "secret", "clouddns")
 			if err != nil {
 				_, stderr, err := ExecAtWithInput(boot0, data, "kubectl", "--namespace=external-dns",
@@ -158,10 +171,7 @@ func testSetup() {
 			}
 
 			By("creating namespace and secrets for cert-manager")
-			_, _, err = ExecAt(boot0, "kubectl", "get", "namespace", "cert-manager")
-			if err != nil {
-				ExecSafeAt(boot0, "kubectl", "create", "namespace", "cert-manager")
-			}
+			createNamespaceIfNotExists("cert-manager")
 			_, _, err = ExecAt(boot0, "kubectl", "--namespace=cert-manager", "get", "secret", "clouddns")
 			if err != nil {
 				_, stderr, err := ExecAtWithInput(boot0, data, "kubectl", "--namespace=cert-manager",
@@ -172,10 +182,7 @@ func testSetup() {
 
 		It("should prepare secrets", func() {
 			By("creating namespace and secrets for grafana")
-			_, _, err := ExecAt(boot0, "kubectl", "get", "namespace", "sandbox")
-			if err != nil {
-				ExecSafeAt(boot0, "kubectl", "create", "namespace", "sandbox")
-			}
+			createNamespaceIfNotExists("sandbox")
 			if !withKind {
 				By("creating namespace and secrets for teleport")
 				stdout, stderr, err := ExecAt(boot0, "env", "ETCDCTL_API=3", "etcdctl", "--cert=/etc/etcd/backup.crt", "--key=/etc/etcd/backup.key",
@@ -190,10 +197,7 @@ func testSetup() {
 					Token: teleportToken,
 				})
 				Expect(err).NotTo(HaveOccurred())
-				_, _, err = ExecAt(boot0, "kubectl", "get", "namespace", "teleport")
-				if err != nil {
-					ExecSafeAt(boot0, "kubectl", "create", "namespace", "teleport")
-				}
+				createNamespaceIfNotExists("teleport")
 				stdout, stderr, err = ExecAtWithInput(boot0, buf.Bytes(), "kubectl", "apply", "-n", "teleport", "-f", "-")
 				Expect(err).NotTo(HaveOccurred(), "stdout: %s, stderr: %s", stdout, stderr)
 
@@ -422,10 +426,7 @@ func applyAndWaitForApplications(overlay, commitID string) {
 
 func setupArgoCD() {
 	By("installing Argo CD")
-	_, _, err := ExecAt(boot0, "kubectl", "get", "namespace", "argocd")
-	if err != nil {
-		ExecSafeAt(boot0, "kubectl", "create", "namespace", "argocd")
-	}
+	createNamespaceIfNotExists("argocd")
 	data, err := ioutil.ReadFile("install.yaml")
 	Expect(err).ShouldNot(HaveOccurred())
 	_, stderr, err := ExecAtWithInput(boot0, data, "kubectl", "apply", "-n", "argocd", "-f", "-")

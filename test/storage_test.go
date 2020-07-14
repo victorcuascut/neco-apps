@@ -325,7 +325,7 @@ func testOSDPodsSpread(cephClusterName, cephClusterNamespace, nodeRole string) {
 func testRookRGW() {
 	It("should create test-rook-rgw namespace", func() {
 		ExecSafeAt(boot0, "kubectl", "delete", "namespace", "test-rook-rgw", "--ignore-not-found=true")
-		ExecSafeAt(boot0, "kubectl", "create", "namespace", "test-rook-rgw")
+		createNamespaceIfNotExists("test-rook-rgw")
 		ExecSafeAt(boot0, "kubectl", "annotate", "namespaces", "test-rook-rgw", "i-am-sure-to-delete=test-rook-rgw")
 	})
 
@@ -398,7 +398,7 @@ func testRookRBD(storageClassName string) {
 	ns := "test-rook-rbd-" + storageClassName
 	It("should create "+ns+" namespace", func() {
 		ExecSafeAt(boot0, "kubectl", "delete", "namespace", ns, "--ignore-not-found=true")
-		ExecSafeAt(boot0, "kubectl", "create", "namespace", ns)
+		createNamespaceIfNotExists(ns)
 		ExecSafeAt(boot0, "kubectl", "annotate", "namespaces", ns, "i-am-sure-to-delete="+ns)
 	})
 
