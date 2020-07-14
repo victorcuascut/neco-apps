@@ -1,0 +1,37 @@
+rule_files:
+  - ../../monitoring/base/prometheus/alert_rules/ingress-watcher.yaml
+
+tests:
+  - interval: 1m
+    input_series:
+      - series: 'ingresswatcher_http_get_successful_total{code="200 OK", job="ingress-watcher-0", path="http://hoge/"}'
+        values: '0+5x15'
+      - series: 'ingresswatcher_http_get_total{job="ingress-watcher-0", path="http://hoge/"}'
+        values: '0+6x15'
+    alert_rule_test:
+      - eval_time: 15m
+        alertname: IngressDown
+        exp_alerts:
+          - exp_labels:
+              job: ingress-watcher-0
+              path: http://hoge/
+              severity: critical
+            exp_annotations:
+              runbook: TBD
+              summary: ingress http://hoge/ is down (from ingress-watcher-0).
+  - interval: 1m
+    input_series:
+      - series: 'ingresswatcher_http_get_total{job="ingress-watcher-0", path="http://hoge/"}'
+        values: '0+5x15'
+      - series: 'ingresswatcher_http_get_total{job="ingress-watcher-0", path="http://fuga/"}'
+        values: '0+5x15'
+    alert_rule_test:
+      - eval_time: 15m
+        alertname: IngressWatcherDown
+        exp_alerts:
+          - exp_labels:
+              job: ingress-watcher-0
+              severity: critical
+            exp_annotations:
+              runbook: TBD
+              summary: ingress watcher ingress-watcher-0 is down.
