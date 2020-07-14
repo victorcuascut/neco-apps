@@ -21,7 +21,7 @@ import (
 func testNetworkPolicy() {
 	It("should create test-netpol namespace", func() {
 		ExecSafeAt(boot0, "kubectl", "delete", "namespace", "test-netpol", "--ignore-not-found=true")
-		ExecSafeAt(boot0, "kubectl", "create", "namespace", "test-netpol")
+		createNamespaceIfNotExists("test-netpol")
 		ExecSafeAt(boot0, "kubectl", "annotate", "namespaces", "test-netpol", "i-am-sure-to-delete=test-netpol")
 	})
 
