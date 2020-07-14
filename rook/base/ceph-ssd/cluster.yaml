@@ -22,11 +22,13 @@ spec:
   placement:
     mon:
       podAntiAffinity:
-        requiredDuringSchedulingIgnoredDuringExecution:
-        - labelSelector:
-            matchLabels:
-              app: rook-ceph-mon
-          topologyKey: topology.kubernetes.io/zone
+        preferredDuringSchedulingIgnoredDuringExecution:
+        - podAffinityTerm:
+            labelSelector:
+              matchLabels:
+                app: rook-ceph-mon
+            topologyKey: topology.kubernetes.io/zone
+          weight: 1
   cephVersion:
     image: quay.io/cybozu/ceph:15.2.3.1
   dashboard:
