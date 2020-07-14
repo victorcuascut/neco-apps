@@ -26,7 +26,7 @@ func testTopoLVM() {
 	ns := "test-topolvm"
 	It("should create test-topolvm namespace", func() {
 		ExecSafeAt(boot0, "kubectl", "delete", "namespace", ns, "--ignore-not-found=true")
-		ExecSafeAt(boot0, "kubectl", "create", "namespace", ns)
+		createNamespaceIfNotExists(ns)
 		ExecSafeAt(boot0, "kubectl", "annotate", "namespaces", ns, "i-am-sure-to-delete="+ns)
 	})
 
