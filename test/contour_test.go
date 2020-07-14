@@ -19,7 +19,7 @@ var ingressNamespaces = []string{"ingress-global", "ingress-forest", "ingress-ba
 func testContour() {
 	It("should create test-ingress namespace", func() {
 		ExecSafeAt(boot0, "kubectl", "delete", "namespace", "test-ingress", "--ignore-not-found=true")
-		ExecSafeAt(boot0, "kubectl", "create", "namespace", "test-ingress")
+		createNamespaceIfNotExists("test-ingress")
 		ExecSafeAt(boot0, "kubectl", "annotate", "namespaces", "test-ingress", "i-am-sure-to-delete=test-ingress")
 	})
 
