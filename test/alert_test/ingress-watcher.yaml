@@ -21,6 +21,8 @@ tests:
               summary: ingress http://hoge/ is down (from ingress-watcher-0).
   - interval: 1m
     input_series:
+      - series: 'ingresswatcher_watch_interval{job="ingress-watcher-0"}'
+        values: '10+0x15'
       - series: 'ingresswatcher_http_get_total{job="ingress-watcher-0", path="http://hoge/"}'
         values: '0+5x15'
       - series: 'ingresswatcher_http_get_total{job="ingress-watcher-0", path="http://fuga/"}'

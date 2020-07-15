@@ -12,7 +12,7 @@ groups:
           runbook: TBD
       - alert: IngressWatcherDown
         expr: |
-          sum by(job)(rate(ingresswatcher_http_get_total[5m])) / count without(path)(rate(ingresswatcher_http_get_total[5m])) < 0.095
+          sum by(job)(rate(ingresswatcher_http_get_total[5m])) / count without(path)(rate(ingresswatcher_http_get_total[5m])) * ingresswatcher_watch_interval < 0.95
         labels:
           severity: critical
         for: 10m
