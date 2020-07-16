@@ -336,6 +336,20 @@ func applyAndWaitForApplications(overlay, commitID string) {
 	fmt.Printf("application list: %v\n", appList)
 	Expect(appList).ShouldNot(HaveLen(0))
 
+	// TODO: this block should be deleted after teleport-auth with Ceph PV is deployed on prod
+	if doUpgrade {
+		stdout := ExecSafeAt(boot0, "kubectl", "get", "-n", "teleport", "pvc", "teleport-storage-teleport-auth-0", "-o", "json")
+		var pvc corev1.PersistentVolumeClaim
+		err = json.Unmarshal(stdout, &pvc)
+		Expect(err).ShouldNot(HaveOccurred())
+
+		if pvc.Spec.StorageClassName != nil && *pvc.Spec.StorageClassName != "ceph-ssd-block" {
+			By("deleting old teleport-auth sts which uses TopoLVM PV")
+			ExecSafeAt(boot0, "kubectl", "delete", "-n", "teleport", "pvc", "teleport-storage-teleport-auth-0", "--wait=0")
+			ExecSafeAt(boot0, "kubectl", "delete", "-n", "teleport", "sts", "teleport-auth")
+		}
+	}
+
 	By("waiting initialization")
 	checkAllAppsSynced := func() error {
 	OUTER:
