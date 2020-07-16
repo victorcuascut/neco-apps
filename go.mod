@@ -27,7 +27,6 @@ require (
 	golang.org/x/xerrors v0.0.0-20191011141410-1b5146add898 // indirect
 	google.golang.org/appengine v1.6.0 // indirect
 	gopkg.in/src-d/go-git.v4 v4.11.0 // indirect
-	gopkg.in/yaml.v2 v2.2.8
 	k8s.io/api v0.17.5
 	k8s.io/apiextensions-apiserver v0.17.3
 	k8s.io/apimachinery v0.17.5
