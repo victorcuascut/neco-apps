@@ -446,7 +446,7 @@ permitInsecure: true
 						path := fmt.Sprintf(`path="%s://%s"`, schema, targetFQDN)
 						for _, line := range strings.Split(res, "\n") {
 							if strings.Contains(line, "ingresswatcher_http_get_successful_total") &&
-								strings.Contains(line, `code="200 OK"`) &&
+								strings.Contains(line, `code="200`) &&
 								strings.Contains(line, path) {
 								continue OUTER
 							}
