@@ -9,6 +9,8 @@ spec:
   destinations:
   - namespace: app-comconv-earthlab
     server: '*'
+  - namespace: app-elasticsearch
+    server: '*'
   - namespace: app-gorush
     server: '*'
   - namespace: app-kodama
