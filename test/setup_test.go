@@ -345,6 +345,23 @@ func applyAndWaitForApplications(overlay, commitID string) {
 
 		if pvc.Spec.StorageClassName != nil && *pvc.Spec.StorageClassName != "ceph-ssd-block" {
 			By("deleting old teleport-auth sts which uses TopoLVM PV")
+			Eventually(func() error {
+				appStdout, stderr, err := ExecAt(boot0, "argocd", "app", "get", "-o", "json", "teleport")
+				if err != nil {
+					return fmt.Errorf("stdout: %s, stderr: %s, err: %v", appStdout, stderr, err)
+				}
+				var app argocd.Application
+				err = json.Unmarshal(appStdout, &app)
+				if err != nil {
+					return fmt.Errorf("stdout: %s, err: %v", appStdout, err)
+				}
+				if app.Status.Sync.ComparedTo.Source.TargetRevision != commitID {
+					return errors.New("teleport does not have correct target yet")
+				}
+
+				return nil
+			}).Should(Succeed())
+
 			ExecSafeAt(boot0, "kubectl", "delete", "-n", "teleport", "pvc", "teleport-storage-teleport-auth-0", "--wait=0")
 			ExecSafeAt(boot0, "kubectl", "delete", "-n", "teleport", "sts", "teleport-auth")
 		}
