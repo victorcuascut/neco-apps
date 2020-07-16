@@ -1,6 +1,7 @@
 package test
 
 import (
+	"bufio"
 	"bytes"
 	"encoding/json"
 	"errors"
@@ -10,12 +11,12 @@ import (
 	"os/exec"
 	"strings"
 
-	"github.com/google/go-cmp/cmp"
-
 	"github.com/creack/pty"
+	"github.com/google/go-cmp/cmp"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	yaml "gopkg.in/yaml.v2" // intentionally used to generate YAML file for placemat
+	k8sYaml "k8s.io/apimachinery/pkg/util/yaml"
+	"sigs.k8s.io/yaml"
 )
 
 type Node struct {
@@ -142,12 +143,22 @@ func testTeleport() {
 }
 
 func decodeNodes(input []byte) []Node {
-	decoder := yaml.NewDecoder(bytes.NewBuffer(input))
+	r := bytes.NewReader(input)
+	y := k8sYaml.NewYAMLReader(bufio.NewReader(r))
+
 	var nodes []Node
 	for {
-		var node Node
-		if decoder.Decode(&node) != nil {
+		data, err := y.Read()
+		if err == io.EOF {
 			break
+		} else if err != nil {
+			return nil
+		}
+
+		var node Node
+		err = yaml.Unmarshal(data, &node)
+		if err != nil {
+			return nil
 		}
 		nodes = append(nodes, node)
 	}
