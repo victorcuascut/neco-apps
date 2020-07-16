@@ -628,3 +628,17 @@ scrape_configs:
         regex: ([^:]+)(?::\d+)?
         replacement: ${1}
         target_label: instance
+  - job_name: "ceph"
+    kubernetes_sd_configs:
+      - role: pod
+        namespaces:
+          names: ["ceph-ssd","ceph-hdd"]
+    relabel_configs:
+      - source_labels: [__meta_kubernetes_pod_label_app]
+        action: keep
+        regex: rook-ceph-mgr
+      - source_labels: [__address__]
+        action: replace
+        regex: ([^:]+)(?::\d+)?
+        replacement: ${1}
+        target_label: instance
