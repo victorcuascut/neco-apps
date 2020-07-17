@@ -561,8 +561,6 @@ spec:
               - force
             parameters:
               type: object
-            parameters:
-              type: object
   subresources:
     status: {}
 ---
@@ -675,4 +673,3 @@ spec:
               maximum: 100
   subresources:
     status: {}
-
