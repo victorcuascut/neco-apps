@@ -138,6 +138,18 @@ spec:
                   type: string
                 config: {}
                 storageClassDeviceSets: {}
+            driveGroups:
+              type: array
+              nullable: true
+              items:
+                properties:
+                  name:
+                    type: string
+                  spec: {}
+                  placement: {}
+                required:
+                - name
+                - spec
             monitoring:
               properties:
                 enabled:
@@ -241,6 +253,8 @@ spec:
                   - passive
                   - aggressive
                   - force
+                parameters:
+                  type: object
             dataPools:
               type: array
               items:
@@ -273,6 +287,8 @@ spec:
                     - passive
                     - aggressive
                     - force
+                parameters:
+                  type: object
             preservePoolsOnDelete:
               type: boolean
   subresources:
@@ -381,6 +397,8 @@ spec:
                   - passive
                   - aggressive
                   - force
+                parameters:
+                  type: object
             dataPool:
               properties:
                 failureDomain:
@@ -405,8 +423,19 @@ spec:
                   - passive
                   - aggressive
                   - force
+                parameters:
+                  type: object
             preservePoolsOnDelete:
               type: boolean
+            healthCheck:
+              properties:
+                bucket:
+                  properties:
+                    enabled:
+                      type: boolean
+                    interval:
+                      type: string
+  subresources:
   subresources:
     status: {}
 ---
@@ -428,6 +457,57 @@ spec:
   version: v1
   subresources:
     status: {}
+---
+apiVersion: apiextensions.k8s.io/v1beta1
+kind: CustomResourceDefinition
+metadata:
+  name: cephobjectrealms.ceph.rook.io
+spec:
+  group: ceph.rook.io
+  names:
+    kind: CephObjectRealm
+    listKind: CephObjectRealmList
+    plural: cephobjectrealms
+    singular: cephobjectrealm
+    shortNames:
+    - realm
+    - realms
+  scope: Namespaced
+  version: v1
+---
+apiVersion: apiextensions.k8s.io/v1beta1
+kind: CustomResourceDefinition
+metadata:
+  name: cephobjectzonegroups.ceph.rook.io
+spec:
+  group: ceph.rook.io
+  names:
+    kind: CephObjectZoneGroup
+    listKind: CephObjectZoneGroupList
+    plural: cephobjectzonegroups
+    singular: cephobjectzonegroup
+    shortNames:
+    - zonegroup
+    - zonegroups
+  scope: Namespaced
+  version: v1
+---
+apiVersion: apiextensions.k8s.io/v1beta1
+kind: CustomResourceDefinition
+metadata:
+  name: cephobjectzones.ceph.rook.io
+spec:
+  group: ceph.rook.io
+  names:
+    kind: CephObjectZone
+    listKind: CephObjectZoneList
+    plural: cephobjectzones
+    singular: cephobjectzone
+    shortNames:
+    - zone
+    - zones
+  scope: Namespaced
+  version: v1
 ---
 apiVersion: apiextensions.k8s.io/v1beta1
 kind: CustomResourceDefinition
@@ -477,6 +557,10 @@ spec:
               - passive
               - aggressive
               - force
+            parameters:
+              type: object
+            parameters:
+              type: object
   subresources:
     status: {}
 ---

@@ -30,7 +30,7 @@ spec:
             topologyKey: topology.kubernetes.io/zone
           weight: 1
   cephVersion:
-    image: quay.io/cybozu/ceph:15.2.3.1
+    image: quay.io/cybozu/ceph:15.2.4.1
   dashboard:
     ssl: true
   priorityClassNames:
