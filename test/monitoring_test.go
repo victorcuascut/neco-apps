@@ -535,7 +535,7 @@ spec:
 		It("should have data sources and dashboards", func() {
 			By("getting admin stats from grafana")
 			Eventually(func() error {
-				stdout, stderr, err := ExecAt(boot0, "curl", "-u", "admin:AUJUl1K2xgeqwMdZ3XlEFc1QhgEQItODMNzJwQme", grafanaFQDN+"/api/admin/stats")
+				stdout, stderr, err := ExecAt(boot0, "curl", "-kL", "-u", "admin:AUJUl1K2xgeqwMdZ3XlEFc1QhgEQItODMNzJwQme", grafanaFQDN+"/api/admin/stats")
 				if err != nil {
 					return fmt.Errorf("unable to get admin stats, stderr: %s, err: %v", stderr, err)
 				}
@@ -558,7 +558,7 @@ spec:
 
 			By("confirming all dashboards are successfully registered")
 			Eventually(func() error {
-				stdout, stderr, err := ExecAt(boot0, "curl", "-u", "admin:AUJUl1K2xgeqwMdZ3XlEFc1QhgEQItODMNzJwQme", grafanaFQDN+"/api/search?type=dash-db")
+				stdout, stderr, err := ExecAt(boot0, "curl", "-kL", "-u", "admin:AUJUl1K2xgeqwMdZ3XlEFc1QhgEQItODMNzJwQme", grafanaFQDN+"/api/search?type=dash-db")
 				if err != nil {
 					return fmt.Errorf("unable to get dashboards, stderr: %s, err: %v", stderr, err)
 				}
