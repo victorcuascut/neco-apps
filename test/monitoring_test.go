@@ -558,7 +558,7 @@ spec:
 
 			By("confirming all dashboards are successfully registered")
 			Eventually(func() error {
-				stdout, stderr, err := ExecAt(boot0, "curl", "-u", "admin:AUJUl1K2xgeqwMdZ3XlEFc1QhgEQItODMNzJwQme", loadBalancerIP+":"+exposedPort+"/api/search?type=dash-db")
+				stdout, stderr, err := ExecAt(boot0, "curl", "-u", "admin:AUJUl1K2xgeqwMdZ3XlEFc1QhgEQItODMNzJwQme", grafanaFQDN+"/api/search?type=dash-db")
 				if err != nil {
 					return fmt.Errorf("unable to get dashboards, stderr: %s, err: %v", stderr, err)
 				}
