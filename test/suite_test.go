@@ -8,6 +8,7 @@ import (
 
 	"github.com/cybozu-go/log"
 	. "github.com/onsi/ginkgo"
+	"github.com/onsi/ginkgo/reporters"
 	. "github.com/onsi/gomega"
 )
 
@@ -17,7 +18,8 @@ func Test(t *testing.T) {
 	}
 
 	RegisterFailHandler(Fail)
-	RunSpecs(t, "Test")
+	junitReporter := reporters.NewJUnitReporter("/tmp/junit.xml")
+	RunSpecsWithDefaultAndCustomReporters(t, "Test", []Reporter{junitReporter})
 }
 
 var _ = BeforeSuite(func() {

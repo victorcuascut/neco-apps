@@ -163,6 +163,10 @@ jobs:
             export NECO_DIR=$(pwd)/neco
             ./bin/run-test.sh
           no_output_timeout: 31m
+      - store_test_results:
+          path: ~/test-results
+      - store_artifacts:
+          path: ~/test-results/junit
       - delete-instance
 
   upgrade-stage:
