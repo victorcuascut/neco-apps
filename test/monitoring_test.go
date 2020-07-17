@@ -10,7 +10,6 @@ import (
 	"path/filepath"
 	"reflect"
 	"sort"
-	"strconv"
 	"strings"
 
 	. "github.com/onsi/ginkgo"
@@ -39,6 +38,10 @@ var (
 
 	bastionPushgatewayFQDN = testID + "-pushgateway-bastion.gcp0.dev-ne.co"
 	forestPushgatewayFQDN  = testID + "-pushgateway-forest.gcp0.dev-ne.co"
+)
+
+var (
+	grafanaFQDN = testID + "-grafana.gcp0.dev-ne.co"
 )
 
 func testMachinesEndpoints() {
@@ -478,80 +481,103 @@ func getLoadBalancerIP(namespace, service string) (string, error) {
 }
 
 func testGrafanaOperator() {
-	It("should be deployed successfully", func() {
-		Eventually(func() error {
-			stdout, _, err := ExecAt(boot0, "kubectl", "--namespace=monitoring",
-				"get", "deployment/grafana-deployment", "-o=json")
-			if err != nil {
-				return err
-			}
-			deployment := new(appsv1.Deployment)
-			err = json.Unmarshal(stdout, deployment)
-			if err != nil {
-				return err
-			}
+	if !withKind {
+		It("should be deployed successfully", func() {
+			Eventually(func() error {
+				stdout, _, err := ExecAt(boot0, "kubectl", "--namespace=monitoring",
+					"get", "deployment/grafana-deployment", "-o=json")
+				if err != nil {
+					return err
+				}
+				deployment := new(appsv1.Deployment)
+				err = json.Unmarshal(stdout, deployment)
+				if err != nil {
+					return err
+				}
 
-			if int(deployment.Status.ReadyReplicas) != 1 {
-				return fmt.Errorf("ReadyReplicas is not 1: %d", int(deployment.Status.ReadyReplicas))
-			}
-			return nil
-		}).Should(Succeed())
-	})
+				if int(deployment.Status.ReadyReplicas) != 1 {
+					return fmt.Errorf("ReadyReplicas is not 1: %d", int(deployment.Status.ReadyReplicas))
+				}
+				return nil
+			}).Should(Succeed())
+		})
 
-	It("should have data sources and dashboards", func() {
-		By("getting external IP of grafana service")
-		stdout, stderr, err := ExecAt(boot0, "kubectl", "--namespace=monitoring", "get", "services", "grafana-service", "-o=json")
-		Expect(err).NotTo(HaveOccurred(), "stdout: %s, stderr: %s, err: %v", stdout, stderr, err)
-		service := new(corev1.Service)
-		err = json.Unmarshal(stdout, service)
-		Expect(err).NotTo(HaveOccurred())
-		loadBalancerIP := service.Status.LoadBalancer.Ingress[0].IP
-		exposedPort := strconv.Itoa(int(service.Spec.Ports[0].Port))
+		It("should create HTTPProxy for ingress-watcher", func() {
+			manifest := fmt.Sprintf(`
+apiVersion: projectcontour.io/v1
+kind: HTTPProxy
+metadata:
+  name: grafana-test
+  namespace: monitoring
+  annotations:
+    kubernetes.io/tls-acme: "true"
+    kubernetes.io/ingress.class: bastion
+spec:
+  virtualhost:
+    fqdn: %s
+    tls:
+      secretName: grafana-test-tls
+  routes:
+    - conditions:
+        - prefix: /
+      services:
+        - name: grafana-service
+          port: 3000
+      timeoutPolicy:
+        response: 2m
+        idle: 5m
+`, grafanaFQDN)
 
-		By("getting admin stats from grafana")
-		Eventually(func() error {
-			stdout, stderr, err := ExecAt(boot0, "curl", "-u", "admin:AUJUl1K2xgeqwMdZ3XlEFc1QhgEQItODMNzJwQme", loadBalancerIP+":"+exposedPort+"/api/admin/stats")
-			if err != nil {
-				return fmt.Errorf("unable to get admin stats, stderr: %s, err: %v", stderr, err)
-			}
-			var adminStats struct {
-				Dashboards  int `json:"dashboards"`
-				Datasources int `json:"datasources"`
-			}
-			err = json.Unmarshal(stdout, &adminStats)
-			if err != nil {
-				return err
-			}
-			if adminStats.Datasources == 0 {
-				return fmt.Errorf("no data sources")
-			}
-			if adminStats.Dashboards == 0 {
-				return fmt.Errorf("no dashboards")
-			}
-			return nil
-		}).Should(Succeed())
+			_, stderr, err := ExecAtWithInput(boot0, []byte(manifest), "kubectl", "apply", "-f", "-")
+			Expect(err).NotTo(HaveOccurred(), "failed to create HTTPProxy. stderr: %s", stderr)
+		})
 
-		By("confirming all dashboards are successfully registered")
-		Eventually(func() error {
-			stdout, stderr, err := ExecAt(boot0, "curl", "-u", "admin:AUJUl1K2xgeqwMdZ3XlEFc1QhgEQItODMNzJwQme", loadBalancerIP+":"+exposedPort+"/api/search?type=dash-db")
-			if err != nil {
-				return fmt.Errorf("unable to get dashboards, stderr: %s, err: %v", stderr, err)
-			}
-			var dashboards []struct {
-				ID int `json:"id"`
-			}
-			err = json.Unmarshal(stdout, &dashboards)
-			if err != nil {
-				return err
-			}
+		It("should have data sources and dashboards", func() {
+			By("getting admin stats from grafana")
+			Eventually(func() error {
+				stdout, stderr, err := ExecAt(boot0, "curl", "-u", "admin:AUJUl1K2xgeqwMdZ3XlEFc1QhgEQItODMNzJwQme", grafanaFQDN+"/api/admin/stats")
+				if err != nil {
+					return fmt.Errorf("unable to get admin stats, stderr: %s, err: %v", stderr, err)
+				}
+				var adminStats struct {
+					Dashboards  int `json:"dashboards"`
+					Datasources int `json:"datasources"`
+				}
+				err = json.Unmarshal(stdout, &adminStats)
+				if err != nil {
+					return err
+				}
+				if adminStats.Datasources == 0 {
+					return fmt.Errorf("no data sources")
+				}
+				if adminStats.Dashboards == 0 {
+					return fmt.Errorf("no dashboards")
+				}
+				return nil
+			}).Should(Succeed())
 
-			// NOTE: expectedNum is the number of files under monitoring/base/grafana/dashboards
-			if len(dashboards) != numGrafanaDashboard {
-				return fmt.Errorf("len(dashboards) should be %d: %d", numGrafanaDashboard, len(dashboards))
-			}
-			return nil
-		}).Should(Succeed())
-	})
+			By("confirming all dashboards are successfully registered")
+			Eventually(func() error {
+				stdout, stderr, err := ExecAt(boot0, "curl", "-u", "admin:AUJUl1K2xgeqwMdZ3XlEFc1QhgEQItODMNzJwQme", loadBalancerIP+":"+exposedPort+"/api/search?type=dash-db")
+				if err != nil {
+					return fmt.Errorf("unable to get dashboards, stderr: %s, err: %v", stderr, err)
+				}
+				var dashboards []struct {
+					ID int `json:"id"`
+				}
+				err = json.Unmarshal(stdout, &dashboards)
+				if err != nil {
+					return err
+				}
+
+				// NOTE: expectedNum is the number of files under monitoring/base/grafana/dashboards
+				if len(dashboards) != numGrafanaDashboard {
+					return fmt.Errorf("len(dashboards) should be %d: %d", numGrafanaDashboard, len(dashboards))
+				}
+				return nil
+			}).Should(Succeed())
+		})
+	}
 }
 
 func testPrometheusMetrics() {
