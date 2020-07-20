@@ -36,33 +36,26 @@ var _ = BeforeSuite(func() {
 // This must be the only top-level test container.
 // Other tests and test containers must be listed in this.
 var _ = Describe("Test applications", func() {
-	if !withKind {
-		Context("prepareNodes", prepareNodes)
-	}
-	if doOSDPodSpreadTest {
+	Context("prepareNodes", prepareNodes)
+	if !doUpgrade && !doBootstrap {
 		Context("prepareLoadPods", prepareLoadPods)
 	}
 	Context("setup", testSetup)
 	if doBootstrap {
 		return
 	}
-	if doOSDPodSpreadTest {
+	if !doUpgrade {
 		Context("OSDPodsSpread", testOSDPodsSpreadAll)
-		return
 	}
 	if doReboot {
 		Context("reboot", testRebootAllNodes)
 	}
 	Context("network-policy", testNetworkPolicy)
 	Context("metallb", testMetalLB)
-	if !withKind {
-		Context("external-dns", testExternalDNS)
-	}
+	Context("external-dns", testExternalDNS)
 	Context("cert-manager", testCertManager)
 	Context("contour", testContour)
-	if !withKind {
-		Context("machines-endpoints", testMachinesEndpoints)
-	}
+	Context("machines-endpoints", testMachinesEndpoints)
 	Context("kube-state-metrics", testKubeStateMetrics)
 	Context("prometheus", testPrometheus)
 	Context("grafana-operator", testGrafanaOperator)
@@ -72,21 +65,15 @@ var _ = Describe("Test applications", func() {
 	Context("ingress-health", testIngressHealth)
 	Context("prometheus-metrics", testPrometheusMetrics)
 	Context("metrics-server", testMetricsServer)
-	if !withKind {
-		Context("teleport", testTeleport)
-	}
+	Context("teleport", testTeleport)
 	Context("topolvm", testTopoLVM)
 	Context("elastic", testElastic)
-	if !withKind {
-		Context("argocd-ingress", testArgoCDIngress)
-	}
+	Context("argocd-ingress", testArgoCDIngress)
 	Context("admission", testAdmission)
-	if !withKind {
-		Context("bmc-reverse-proxy", testBMCReverseProxy)
-		Context("local-pv-provisioner", testLocalPVProvisioner)
-		Context("rookOperator", testRookOperator)
-		Context("MONPodsSpread", testMONPodsSpreadAll)
-		Context("rookRGW", testRookRGW)
-		Context("rookRBD", testRookRBDAll)
-	}
+	Context("bmc-reverse-proxy", testBMCReverseProxy)
+	Context("local-pv-provisioner", testLocalPVProvisioner)
+	Context("rookOperator", testRookOperator)
+	Context("MONPodsSpread", testMONPodsSpreadAll)
+	Context("rookRGW", testRookRGW)
+	Context("rookRBD", testRookRBDAll)
 })

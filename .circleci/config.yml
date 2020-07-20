@@ -193,39 +193,6 @@ jobs:
           no_output_timeout: 31m
       - delete-instance
 
-  osd-pod-spread:
-    docker:
-      - image: google/cloud-sdk
-    steps:
-      - checkout
-      - boot-dctest
-      - run:
-          name: Test neco-apps
-          command: |
-            export NECO_DIR=$(pwd)/neco
-            TARGET=dctest-osd-pod-spread ./bin/run-test.sh
-          no_output_timeout: 31m
-      - delete-instance
-
-  kindtest:
-    docker:
-      - image: google/cloud-sdk
-    steps:
-      - checkout
-      - run:
-          name: Store Service Account
-          command: |
-            echo $GCLOUD_SERVICE_ACCOUNT > account.json
-            gcloud auth activate-service-account --key-file=account.json
-      - run:
-          name: Run test
-          command: |
-            curl -sSLf -o ./bin/env https://raw.githubusercontent.com/cybozu-go/neco/master/bin/env
-            ./bin/run-kindtest.sh
-          no_output_timeout: 31m
-      - delete-instance:
-          need-copy-env: false
-
   create-pull-request-stage:
     docker:
       - image: quay.io/cybozu/ubuntu-dev:18.04
@@ -301,28 +268,22 @@ workflows:
   main:
     jobs:
       - test
-      - kindtest:
-          filters:
-            branches:
-              ignore: ["master", "stage", "release", /^op-(stage|release)-.*/]
-
-  manual-dctest:
-    jobs:
-      - hold:
-          type: approval
       - bootstrap:
           name: bootstrap
-          requires:
-            - hold
-      - upgrade-release:
-          requires:
-            - hold
+          requires: ["test"]
+          filters:
+            branches:
+              ignore: ["stage", "release", /^op-(stage|release)-.*/]
       - upgrade-stage:
-          requires:
-            - hold
-      - osd-pod-spread:
-          requires:
-            - hold
+          requires: ["test"]
+          filters:
+            branches:
+              ignore: ["stage", "release", /^op-(stage|release)-.*/]
+      - upgrade-release:
+          requires: ["test"]
+          filters:
+            branches:
+              ignore: ["release", /^op-(stage|release)-.*/]
       - create-pull-request-stage:
           filters:
             branches:
@@ -332,7 +293,6 @@ workflows:
             - bootstrap
             - upgrade-stage
             - upgrade-release
-            - osd-pod-spread
 
   # Test with the specified neco branch.
   manual-dctest-with-neco-feature-branch:
@@ -362,15 +322,6 @@ workflows:
     jobs:
       - clean-dns
       - bootstrap
-      - upgrade-stage
-      - upgrade-release
-      - osd-pod-spread
-      - create-pull-request-stage:
-          requires:
-            - bootstrap
-            - upgrade-stage
-            - upgrade-release
-            - osd-pod-spread
   release-tag:
     jobs:
       - push-release-tag:

@@ -41,9 +41,6 @@ func testCertManager() {
 		domainName := testID + "-cert-manager.gcp0.dev-ne.co"
 		By("deploying Certificate")
 		issuerName := "clouddns"
-		if withKind {
-			issuerName = "self-signed-issuer"
-		}
 		certificate := fmt.Sprintf(`
 apiVersion: cert-manager.io/v1alpha2
 kind: Certificate
@@ -89,9 +86,6 @@ spec:
 				return fmt.Errorf("Certificate status is not True: %s", status.Status)
 			}
 			desiredReason := "ACMEAccountRegistered"
-			if withKind {
-				desiredReason = "IsReady"
-			}
 			if status.Reason != desiredReason {
 				return fmt.Errorf("ClusterIssuer reason not %s: %s", desiredReason, status.Reason)
 			}
