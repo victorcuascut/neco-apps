@@ -19,7 +19,7 @@ func testArgoCDIngress() {
 		manifest := fmt.Sprintf(`apiVersion: projectcontour.io/v1
 kind: HTTPProxy
 metadata:
-  name: argocd-server
+  name: argocd-server-test
   namespace: argocd
   annotations:
     kubernetes.io/tls-acme: "true"
@@ -28,7 +28,7 @@ spec:
   virtualhost:
     fqdn: %s
     tls:
-      secretName: argocd-server-cert
+      secretName: argocd-server-cert-test
   routes:
     # For static files and Dex APIs
     - conditions:
