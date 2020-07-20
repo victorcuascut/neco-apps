@@ -181,6 +181,10 @@ jobs:
             export NECO_DIR=$(pwd)/neco
             TARGET=dctest-upgrade BASE_BRANCH=stage ./bin/run-test.sh
           no_output_timeout: 31m
+      - store_test_results:
+          path: ~/test-results
+      - store_artifacts:
+          path: ~/test-results/junit
       - delete-instance
 
   upgrade-release:
@@ -195,6 +199,10 @@ jobs:
             export NECO_DIR=$(pwd)/neco
             TARGET=dctest-upgrade BASE_BRANCH=release ./bin/run-test.sh
           no_output_timeout: 31m
+      - store_test_results:
+          path: ~/test-results
+      - store_artifacts:
+          path: ~/test-results/junit
       - delete-instance
 
   create-pull-request-stage:
