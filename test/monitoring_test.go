@@ -22,17 +22,6 @@ import (
 	"sigs.k8s.io/yaml"
 )
 
-// dcJobs is the subset of the Prometheus jobs deployed in dctest but not deployed in kindtest
-var dcJobs = []string{
-	"cke",
-	"cke-etcd",
-	"external-dns",
-	"monitor-hw",
-	"teleport",
-	"bootserver-etcd",
-	"node-exporter",
-	"sabakan",
-}
 var (
 	globalHealthFQDN  = testID + "-ingress-health-global.gcp0.dev-ne.co"
 	bastionHealthFQDN = testID + "-ingress-health-bastion.gcp0.dev-ne.co"
@@ -154,10 +143,6 @@ func testPrometheus() {
 	})
 
 	It("should find endpoint", func() {
-		if withKind {
-			Skip("does not make sense with kindtest")
-		}
-
 		Eventually(func() error {
 			stdout, stderr, err := ExecAt(boot0, "kubectl", "--namespace=monitoring", "exec",
 				podName, "curl", "http://localhost:9090/api/v1/targets")
@@ -295,28 +280,26 @@ spec:
 		}).Should(Succeed())
 	})
 
-	if !withKind {
-		It("should be accessed from Bastion", func() {
-			By("getting the IP address of the contour LoadBalancer")
-			Eventually(func() error {
-				stdout, stderr, err := ExecAt(boot0,
-					"curl", "-s", "http://"+bastionPushgatewayFQDN+"/-/healthy", "-o", "/dev/null",
-				)
-				if err != nil {
-					return fmt.Errorf("stdout: %s, stderr: %s, err: %v", stdout, stderr, err)
-				}
-				return nil
-			}).Should(Succeed())
-		})
+	It("should be accessed from Bastion", func() {
+		By("getting the IP address of the contour LoadBalancer")
+		Eventually(func() error {
+			stdout, stderr, err := ExecAt(boot0,
+				"curl", "-s", "http://"+bastionPushgatewayFQDN+"/-/healthy", "-o", "/dev/null",
+			)
+			if err != nil {
+				return fmt.Errorf("stdout: %s, stderr: %s, err: %v", stdout, stderr, err)
+			}
+			return nil
+		}).Should(Succeed())
+	})
 
-		It("should be accessed from Forest", func() {
-			forestIP, err := getLoadBalancerIP("ingress-forest", "envoy")
-			Expect(err).ShouldNot(HaveOccurred())
-			Eventually(func() error {
-				return exec.Command("sudo", "nsenter", "-n", "-t", externalPID, "curl", "--resolve", forestPushgatewayFQDN+":80:"+forestIP, forestPushgatewayFQDN+"/-/healthy", "-m", "5").Run()
-			}).Should(Succeed())
-		})
-	}
+	It("should be accessed from Forest", func() {
+		forestIP, err := getLoadBalancerIP("ingress-forest", "envoy")
+		Expect(err).ShouldNot(HaveOccurred())
+		Eventually(func() error {
+			return exec.Command("sudo", "nsenter", "-n", "-t", externalPID, "curl", "--resolve", forestPushgatewayFQDN+":80:"+forestIP, forestPushgatewayFQDN+"/-/healthy", "-m", "5").Run()
+		}).Should(Succeed())
+	})
 }
 
 func testIngressHealth() {
@@ -346,9 +329,8 @@ func testIngressHealth() {
 		}).Should(Succeed())
 	})
 
-	if !withKind {
-		It("should create HTTPProxy for ingress-watcher", func() {
-			manifest := fmt.Sprintf(`apiVersion: projectcontour.io/v1
+	It("should create HTTPProxy for ingress-watcher", func() {
+		manifest := fmt.Sprintf(`apiVersion: projectcontour.io/v1
 kind: HTTPProxy
 metadata:
   name: ingress-health-global-test
@@ -397,23 +379,23 @@ spec:
         idle: 5m
 `, globalHealthFQDN, bastionHealthFQDN)
 
-			_, stderr, err := ExecAtWithInput(boot0, []byte(manifest), "kubectl", "apply", "-f", "-")
-			Expect(err).NotTo(HaveOccurred(), "failed to create HTTPProxy. stderr: %s", stderr)
-		})
+		_, stderr, err := ExecAtWithInput(boot0, []byte(manifest), "kubectl", "apply", "-f", "-")
+		Expect(err).NotTo(HaveOccurred(), "failed to create HTTPProxy. stderr: %s", stderr)
+	})
 
-		It("should replace ingress-watcher configuration file", func() {
-			By("comfirming ingress-watcher configuration file")
-			ingressWatcherConfPath := "/etc/ingress-watcher/ingress-watcher.yaml"
-			Eventually(func() error {
-				stdout, stderr, err := ExecAt(boot0, "test", "-f", ingressWatcherConfPath)
-				if err != nil {
-					return fmt.Errorf("stdout: %s, stderr: %s, err: %v", stdout, stderr, err)
-				}
-				return nil
-			}).Should(Succeed())
+	It("should replace ingress-watcher configuration file", func() {
+		By("comfirming ingress-watcher configuration file")
+		ingressWatcherConfPath := "/etc/ingress-watcher/ingress-watcher.yaml"
+		Eventually(func() error {
+			stdout, stderr, err := ExecAt(boot0, "test", "-f", ingressWatcherConfPath)
+			if err != nil {
+				return fmt.Errorf("stdout: %s, stderr: %s, err: %v", stdout, stderr, err)
+			}
+			return nil
+		}).Should(Succeed())
 
-			By("replacing ingress-watcher configuration file")
-			config := fmt.Sprintf(`
+		By("replacing ingress-watcher configuration file")
+		config := fmt.Sprintf(`
 targetURLs:
 - https://%s
 - http://%s
@@ -426,39 +408,38 @@ pushAddr: %s
 pushInterval: 10s
 permitInsecure: true
 `, bastionHealthFQDN, bastionHealthFQDN, globalHealthFQDN, globalHealthFQDN, bastionPushgatewayFQDN)
-			stdout, stderr, err := ExecAtWithInput(boot0, []byte(config), "sudo", "dd", "of="+ingressWatcherConfPath)
-			Expect(err).NotTo(HaveOccurred(), "stdout: %s, stderr: %s, err: %v", stdout, stderr, err)
-			ExecSafeAt(boot0, "sudo", "systemctl", "restart", "ingress-watcher.service")
-		})
+		stdout, stderr, err := ExecAtWithInput(boot0, []byte(config), "sudo", "dd", "of="+ingressWatcherConfPath)
+		Expect(err).NotTo(HaveOccurred(), "stdout: %s, stderr: %s, err: %v", stdout, stderr, err)
+		ExecSafeAt(boot0, "sudo", "systemctl", "restart", "ingress-watcher.service")
+	})
 
-		It("should push metrics to the push-gateway", func() {
-			By("requesting push-gateway server")
-			Eventually(func() error {
-				stdout, stderr, err := ExecAt(boot0, "curl", "-s", "http://"+bastionPushgatewayFQDN+"/metrics")
-				if err != nil {
-					return fmt.Errorf("stdout: %s, stderr: %s, err: %v", stdout, stderr, err)
-				}
+	It("should push metrics to the push-gateway", func() {
+		By("requesting push-gateway server")
+		Eventually(func() error {
+			stdout, stderr, err := ExecAt(boot0, "curl", "-s", "http://"+bastionPushgatewayFQDN+"/metrics")
+			if err != nil {
+				return fmt.Errorf("stdout: %s, stderr: %s, err: %v", stdout, stderr, err)
+			}
 
-				res := string(stdout)
-			OUTER:
-				for _, targetFQDN := range []string{globalHealthFQDN, bastionHealthFQDN} {
-					for _, schema := range []string{"http", "https"} {
-						path := fmt.Sprintf(`path="%s://%s"`, schema, targetFQDN)
-						for _, line := range strings.Split(res, "\n") {
-							if strings.Contains(line, "ingresswatcher_http_get_successful_total") &&
-								strings.Contains(line, `code="200`) &&
-								strings.Contains(line, path) {
-								continue OUTER
-							}
+			res := string(stdout)
+		OUTER:
+			for _, targetFQDN := range []string{globalHealthFQDN, bastionHealthFQDN} {
+				for _, schema := range []string{"http", "https"} {
+					path := fmt.Sprintf(`path="%s://%s"`, schema, targetFQDN)
+					for _, line := range strings.Split(res, "\n") {
+						if strings.Contains(line, "ingresswatcher_http_get_successful_total") &&
+							strings.Contains(line, `code="200`) &&
+							strings.Contains(line, path) {
+							continue OUTER
 						}
-						return fmt.Errorf("metric ingresswatcher_http_get_successful_total does not exist: metrics=%s, path=%s://%s", res, schema, targetFQDN)
 					}
+					return fmt.Errorf("metric ingresswatcher_http_get_successful_total does not exist: metrics=%s, path=%s://%s", res, schema, targetFQDN)
 				}
+			}
 
-				return nil
-			}).Should(Succeed())
-		})
-	}
+			return nil
+		}).Should(Succeed())
+	})
 }
 
 func getLoadBalancerIP(namespace, service string) (string, error) {
@@ -604,11 +585,7 @@ func testPrometheusMetrics() {
 
 		var jobNames []model.LabelName
 		for _, sc := range promConfig.ScrapeConfigs {
-			jobName := sc.JobName
-			if withKind && isDCJob(jobName) {
-				continue
-			}
-			jobNames = append(jobNames, model.LabelName(jobName))
+			jobNames = append(jobNames, model.LabelName(sc.JobName))
 		}
 
 		By("checking discovered active labels and statuses")
@@ -760,15 +737,6 @@ func testPrometheusMetrics() {
 			"\nactual   = %v\nexpected = %v", actual, expected)
 	})
 
-}
-
-func isDCJob(job string) bool {
-	for _, dcJob := range dcJobs {
-		if dcJob == job {
-			return true
-		}
-	}
-	return false
 }
 
 func findTarget(job string, targets []promv1.ActiveTarget) *promv1.ActiveTarget {
