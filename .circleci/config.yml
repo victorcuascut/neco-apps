@@ -321,6 +321,7 @@ workflows:
                 - master
     jobs:
       - clean-dns
+      - bootstrap
   release-tag:
     jobs:
       - push-release-tag:
