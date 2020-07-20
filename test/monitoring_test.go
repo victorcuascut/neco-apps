@@ -421,8 +421,8 @@ targetURLs:
 - http://%s
 watchInterval: 10s
 
+instance: 1.2.3.4
 pushAddr: %s
-jobName: ingress-watcher-0
 pushInterval: 10s
 permitInsecure: true
 `, bastionHealthFQDN, bastionHealthFQDN, globalHealthFQDN, globalHealthFQDN, bastionPushgatewayFQDN)
