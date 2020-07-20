@@ -49,13 +49,7 @@ stringData:
         output: stderr
         severity: DEBUG
       storage:
-        type: etcd
-        peers: ["https://cke-etcd.kube-system.svc:2379"]
-        tls_cert_file: /var/lib/etcd-certs/tls.crt
-        tls_key_file: /var/lib/etcd-certs/tls.key
-        tls_ca_file: /var/lib/etcd-certs/ca.crt
-        prefix: /teleport
-        insecure: false
+        type: dir
 ---
 apiVersion: v1
 kind: Secret
