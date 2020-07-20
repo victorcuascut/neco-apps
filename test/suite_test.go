@@ -37,13 +37,15 @@ var _ = BeforeSuite(func() {
 // Other tests and test containers must be listed in this.
 var _ = Describe("Test applications", func() {
 	Context("prepareNodes", prepareNodes)
-	if doBootstrap {
+	if !doUpgrade && !doBootstrap {
 		Context("prepareLoadPods", prepareLoadPods)
 	}
 	Context("setup", testSetup)
 	if doBootstrap {
-		Context("OSDPodsSpread", testOSDPodsSpreadAll)
 		return
+	}
+	if !doUpgrade {
+		Context("OSDPodsSpread", testOSDPodsSpreadAll)
 	}
 	if doReboot {
 		Context("reboot", testRebootAllNodes)
