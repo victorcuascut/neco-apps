@@ -3,19 +3,22 @@ groups:
     rules:
       - alert: IngressDown
         expr: |
-          rate(ingresswatcher_http_get_successful_total{code="200 OK"}[5m]) / on(job,path) rate(ingresswatcher_http_get_total[5m]) < 0.95
+          rate(ingresswatcher_http_get_successful_total{job="ingress-watcher", code="200"}[5m])
+            /
+          ignoring(code) rate(ingresswatcher_http_get_total{job="ingress-watcher"}[5m])
+          < 0.95
         labels:
           severity: critical
         for: 10m
         annotations:
-          summary: ingress {{ $labels.path }} is down (from {{ $labels.job }}).
+          summary: ingress {{ $labels.path }} is down (from {{ $labels.instance }}).
           runbook: TBD
       - alert: IngressWatcherDown
         expr: |
-          sum by(job)(rate(ingresswatcher_http_get_total[5m])) / count without(path)(rate(ingresswatcher_http_get_total[5m])) * ingresswatcher_watch_interval < 0.95
+          rate(ingresswatcher_update_time[5m]) == 0
         labels:
           severity: critical
         for: 10m
         annotations:
-          summary: ingress watcher {{ $labels.job }} is down.
+          summary: ingress watcher {{ $labels.instance }} is down.
           runbook: TBD
