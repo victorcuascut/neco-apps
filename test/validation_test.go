@@ -55,7 +55,6 @@ func kustomizeBuild(dir string) ([]byte, []byte, error) {
 func testApplicationResources(t *testing.T) {
 	targetRevisions := map[string]string{
 		"gcp":    "release",
-		"kind":   "release",
 		"osaka0": "release",
 		"stage0": "stage",
 		"tokyo0": "release",
