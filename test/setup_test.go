@@ -397,7 +397,7 @@ func applyAndWaitForApplications(overlay, commitID string) {
 			time.Sleep(1 * time.Second)
 		}
 		return nil
-	}).Should(Succeed())
+	}, 30*time.Minute).Should(Succeed())
 }
 
 func setupArgoCD() {
