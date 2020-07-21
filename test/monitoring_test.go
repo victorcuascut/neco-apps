@@ -287,7 +287,7 @@ spec:
 	It("should be accessed from Bastion", func() {
 		Eventually(func() error {
 			stdout, stderr, err := ExecAt(boot0,
-				"curl", "-s", "http://"+bastionPushgatewayFQDN+"/-/healthy", "-o", "/dev/null",
+				"curl", "-sv", "http://"+bastionPushgatewayFQDN+"/-/healthy", "-o", "/dev/null",
 			)
 			if err != nil {
 				log.Warn("curl failed", map[string]interface{}{
