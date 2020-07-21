@@ -7,6 +7,7 @@ import (
 
 var (
 	doBootstrap         = os.Getenv("BOOTSTRAP") == "1"
+	doCeph              = os.Getenv("CEPH") == "1"
 	doUpgrade           = os.Getenv("UPGRADE") == "1"
 	doReboot            = os.Getenv("REBOOT") == "1"
 	boot0               = os.Getenv("BOOT0")

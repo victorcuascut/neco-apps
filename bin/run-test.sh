@@ -1,7 +1,8 @@
 #!/bin/sh
 
 . ${NECO_DIR}/bin/env
-TARGET=${TARGET:-dctest-reboot}
+
+TARGET=${TARGET:-dctest}
 BASE_BRANCH=${BASE_BRANCH:-master}
 
 cat >run.sh <<EOF
@@ -23,7 +24,7 @@ git checkout -qf ${CIRCLE_SHA1}
 cd test
 cp /home/cybozu/account.json ./
 make setup
-make -f Makefile.dctest $TARGET COMMIT_ID=${CIRCLE_SHA1} BASE_BRANCH=${BASE_BRANCH}
+make $TARGET COMMIT_ID=${CIRCLE_SHA1} BASE_BRANCH=${BASE_BRANCH}
 EOF
 chmod +x run.sh
 

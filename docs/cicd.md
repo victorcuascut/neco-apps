@@ -32,11 +32,12 @@ This repository has 4 CircleCI workflows: `main`, `daily`, `manual-dctest` and `
 | --------------------------- | ----------------------------------------------------------------- | ------------------------------------------ |
 | `test`                      | Go unit tests                                                     | all branches                               |
 | `bootstrap`                 | Bootstrap test on GCP instances                                   | all branches except for `stage`, `release` |
+| `ceph`                      | Test for Ceph and Rook                                            | all branches except for `stage`, `release` |
 | `upgrade-stage`             | Upgrade test for `stage` branch (staging env)                     | all branches except for `stage`, `release` |
 | `upgrade-release`           | Upgrade test for `release` branch (production env)                | all branches except for `release`          |
 | `create-pull-request-stage` | Create PR to stage, then trigger `create-pull-request-stage` job. | `master`                                   |
 
-`create-pull-request-stage` is executed only if 4 other jobs succeeded.
+`create-pull-request-stage` is executed only if other jobs except for `ceph` succeeded.
 
 ### `daily` workflow
 
@@ -45,6 +46,7 @@ This repository has 4 CircleCI workflows: `main`, `daily`, `manual-dctest` and `
 | job name    | description                              | target branch |
 | ----------- | ---------------------------------------- | ------------- |
 | `clean-dns` | Clean DNS entries for `dev-ne.co` domain | `master`      |
+| `reboot`    | Reboot test during `bootstrap` job       | `master`      |
 
 ### `manual-dctest-with-neco-feature-branch` workflow
 

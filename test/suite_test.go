@@ -36,16 +36,22 @@ var _ = BeforeSuite(func() {
 // This must be the only top-level test container.
 // Other tests and test containers must be listed in this.
 var _ = Describe("Test applications", func() {
-	Context("prepareNodes", prepareNodes)
-	if !doUpgrade && !doBootstrap {
+	if doCeph {
+		Context("prepareNodes", prepareNodes)
 		Context("prepareLoadPods", prepareLoadPods)
+		Context("setup", testSetup)
+		Context("OSDPodsSpread", testOSDPodsSpreadAll)
+		Context("rookOperator", testRookOperator)
+		Context("MONPodsSpread", testMONPodsSpreadAll)
+		Context("rookRGW", testRookRGW)
+		Context("rookRBD", testRookRBDAll)
+		return
 	}
+
+	Context("prepareNodes", prepareNodes)
 	Context("setup", testSetup)
 	if doBootstrap {
 		return
-	}
-	if !doUpgrade {
-		Context("OSDPodsSpread", testOSDPodsSpreadAll)
 	}
 	if doReboot {
 		Context("reboot", testRebootAllNodes)
@@ -65,15 +71,11 @@ var _ = Describe("Test applications", func() {
 	Context("ingress-health", testIngressHealth)
 	Context("prometheus-metrics", testPrometheusMetrics)
 	Context("metrics-server", testMetricsServer)
-	Context("teleport", testTeleport)
 	Context("topolvm", testTopoLVM)
 	Context("elastic", testElastic)
 	Context("argocd-ingress", testArgoCDIngress)
 	Context("admission", testAdmission)
 	Context("bmc-reverse-proxy", testBMCReverseProxy)
 	Context("local-pv-provisioner", testLocalPVProvisioner)
-	Context("rookOperator", testRookOperator)
-	Context("MONPodsSpread", testMONPodsSpreadAll)
-	Context("rookRGW", testRookRGW)
-	Context("rookRBD", testRookRBDAll)
+	Context("teleport", testTeleport)
 })
