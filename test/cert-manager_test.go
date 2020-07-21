@@ -118,7 +118,7 @@ spec:
 
 			// Check the CertificateRequest status (the result of ACME challenge).
 			// If the status is failed, recreate the Certificate and force to retry the ACME challenge.
-			certReq, err := getCertificateRequest(cert)
+			certReq, err := getCertificateRequest(cert, "cert-manager")
 			if err != nil {
 				return err
 			}
@@ -152,11 +152,11 @@ spec:
 	})
 }
 
-func getCertificateRequest(cert certmanagerv1alpha2.Certificate) (*certmanagerv1alpha2.CertificateRequest, error) {
+func getCertificateRequest(cert certmanagerv1alpha2.Certificate, namespace string) (*certmanagerv1alpha2.CertificateRequest, error) {
 	var certReqList certmanagerv1alpha2.CertificateRequestList
 	var targetCertReq *certmanagerv1alpha2.CertificateRequest
 
-	stdout, stderr, err := ExecAt(boot0, "kubectl", "get", "-n=cert-manager", "certificaterequest", "-o", "json")
+	stdout, stderr, err := ExecAt(boot0, "kubectl", "get", "-n", namespace, "certificaterequest", "-o", "json")
 	if err != nil {
 		return nil, fmt.Errorf("stdout: %s, stderr: %s, err: %v", stdout, stderr, err)
 	}
