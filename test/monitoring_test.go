@@ -12,6 +12,7 @@ import (
 	"sort"
 	"strings"
 
+	"github.com/cybozu-go/log"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	promv1 "github.com/prometheus/client_golang/api/prometheus/v1"
@@ -284,13 +285,16 @@ spec:
 	})
 
 	It("should be accessed from Bastion", func() {
-		By("getting the IP address of the contour LoadBalancer")
 		Eventually(func() error {
 			stdout, stderr, err := ExecAt(boot0,
 				"curl", "-s", "http://"+bastionPushgatewayFQDN+"/-/healthy", "-o", "/dev/null",
 			)
 			if err != nil {
-				return fmt.Errorf("stdout: %s, stderr: %s, err: %v", stdout, stderr, err)
+				log.Warn("curl failed", map[string]interface{}{
+					"stdout": string(stdout),
+					"stderr": string(stderr),
+				})
+				return fmt.Errorf("stdout: %s, stderr: %s, err: %v", string(stdout), string(stderr), err)
 			}
 			return nil
 		}).Should(Succeed())

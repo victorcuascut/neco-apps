@@ -169,6 +169,44 @@ jobs:
           path: ~/test-results/junit
       - delete-instance
 
+  reboot:
+    docker:
+      - image: google/cloud-sdk
+    parameters:
+      neco-release-branch:
+        type: boolean
+        default: true
+    steps:
+      - checkout
+      - boot-dctest:
+          neco-release-branch: <<parameters.neco-release-branch>>
+      - run:
+          name: Test neco-apps
+          command: |
+            export NECO_DIR=$(pwd)/neco
+            TARGET=dctest-reboot ./bin/run-test.sh
+          no_output_timeout: 31m
+      - delete-instance
+
+  ceph:
+    docker:
+      - image: google/cloud-sdk
+    parameters:
+      neco-release-branch:
+        type: boolean
+        default: true
+    steps:
+      - checkout
+      - boot-dctest:
+          neco-release-branch: <<parameters.neco-release-branch>>
+      - run:
+          name: Test neco-apps
+          command: |
+            export NECO_DIR=$(pwd)/neco
+            TARGET=dctest-ceph ./bin/run-test.sh
+          no_output_timeout: 31m
+      - delete-instance
+
   upgrade-stage:
     docker:
       - image: google/cloud-sdk
@@ -281,7 +319,6 @@ workflows:
     jobs:
       - test
       - bootstrap:
-          name: bootstrap
           requires: ["test"]
           filters:
             branches:
@@ -305,6 +342,13 @@ workflows:
             - bootstrap
             - upgrade-stage
             - upgrade-release
+
+  ceph:
+    jobs:
+      - ceph:
+          filters:
+            branches:
+              ignore: ["stage", "release", /^op-(stage|release)-.*/]
 
   # Test with the specified neco branch.
   manual-dctest-with-neco-feature-branch:
@@ -333,7 +377,7 @@ workflows:
                 - master
     jobs:
       - clean-dns
-      - bootstrap
+      - reboot
   release-tag:
     jobs:
       - push-release-tag:

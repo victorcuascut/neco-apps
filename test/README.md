@@ -23,7 +23,7 @@ dctest
     cd test
     make setup
     make test
-    make -f Makefile.dctest dctest
+    make dctest
     ```
 
 `./account.json`

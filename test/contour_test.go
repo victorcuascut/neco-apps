@@ -294,7 +294,7 @@ spec:
 			// Check the CertificateRequest status (the result of ACME challenge).
 			// If the status is failed, delete the Certificate and force to retry the ACME challenge.
 			// The Certificate will be recreated by contour-plus.
-			certReq, err := getCertificateRequest(cert)
+			certReq, err := getCertificateRequest(cert, "test-ingress")
 			if err != nil {
 				return err
 			}
