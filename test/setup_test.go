@@ -87,10 +87,6 @@ stringData:
 )
 
 func prepareNodes() {
-	It("should enable CKE-sabakan integration feature", func() {
-		ExecSafeAt(boot0, "ckecli", "sabakan", "enable")
-	})
-
 	It("should increase worker nodes", func() {
 		ExecSafeAt(boot0, "ckecli", "constraints", "set", "minimum-workers", "4")
 		Eventually(func() error {
@@ -124,10 +120,6 @@ func prepareNodes() {
 
 			return nil
 		}).Should(Succeed())
-	})
-
-	It("should disable CKE-sabakan integration feature", func() {
-		ExecSafeAt(boot0, "ckecli", "sabakan", "disable")
 	})
 }
 
