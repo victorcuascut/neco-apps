@@ -22,7 +22,7 @@ The GCP instance name is `neco-apps-<CircleCI Build Number>`. If the job succeed
 CircleCI Workflow
 -----------------
 
-This repository has 4 CircleCI workflows: `main`, `daily`, `manual-dctest` and `manual-dctest-with-neco-feature-branch`.
+This repository has 6 CircleCI workflows: `main`, `ceph`, `daily`, `manual-dctest-with-neco-feature-branch`, `release-tag` and `production-release`.
 
 ### `main` workflow
 
@@ -32,12 +32,19 @@ This repository has 4 CircleCI workflows: `main`, `daily`, `manual-dctest` and `
 | --------------------------- | ----------------------------------------------------------------- | ------------------------------------------ |
 | `test`                      | Go unit tests                                                     | all branches                               |
 | `bootstrap`                 | Bootstrap test on GCP instances                                   | all branches except for `stage`, `release` |
-| `ceph`                      | Test for Ceph and Rook                                            | all branches except for `stage`, `release` |
 | `upgrade-stage`             | Upgrade test for `stage` branch (staging env)                     | all branches except for `stage`, `release` |
 | `upgrade-release`           | Upgrade test for `release` branch (production env)                | all branches except for `release`          |
 | `create-pull-request-stage` | Create PR to stage, then trigger `create-pull-request-stage` job. | `master`                                   |
 
-`create-pull-request-stage` is executed only if other jobs except for `ceph` succeeded.
+`create-pull-request-stage` is executed only if other jobs succeeded.
+
+### `ceph` workflow
+
+`ceph` workflow is used for testing feature branch of `neco-apps` especially in regard to Ceph and Rook. This consists of the following job.
+
+| job name | description            | target branch                              |
+| -------- | ---------------------- | ------------------------------------------ |
+| `ceph`   | Test for Ceph and Rook | all branches except for `stage`, `release` |
 
 ### `daily` workflow
 
