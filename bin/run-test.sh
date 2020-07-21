@@ -30,5 +30,8 @@ chmod +x run.sh
 # Clean old CI files
 $GCLOUD compute scp --zone=${ZONE} run.sh account.json cybozu@${INSTANCE_NAME}:
 $GCLOUD compute ssh --zone=${ZONE} cybozu@${INSTANCE_NAME} --command="sudo -H /home/cybozu/run.sh"
+STATUSCODE=$?
+mkdir -p ~/test-results/junit/
+$GCLOUD compute scp --zone=${ZONE} cybozu@${INSTANCE_NAME}:/tmp/junit.xml ~/test-results/junit/
 
-exit $?
+exit ${STATUSCODE}
