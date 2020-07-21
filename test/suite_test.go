@@ -8,6 +8,7 @@ import (
 
 	"github.com/cybozu-go/log"
 	. "github.com/onsi/ginkgo"
+	"github.com/onsi/ginkgo/reporters"
 	. "github.com/onsi/gomega"
 )
 
@@ -17,14 +18,15 @@ func Test(t *testing.T) {
 	}
 
 	RegisterFailHandler(Fail)
-	RunSpecs(t, "Test")
+	junitReporter := reporters.NewJUnitReporter("/tmp/junit.xml")
+	RunSpecsWithDefaultAndCustomReporters(t, "Test", []Reporter{junitReporter})
 }
 
 var _ = BeforeSuite(func() {
 	fmt.Println("Preparing...")
 
 	SetDefaultEventuallyPollingInterval(time.Second)
-	SetDefaultEventuallyTimeout(30 * time.Minute)
+	SetDefaultEventuallyTimeout(20 * time.Minute)
 
 	prepare()
 
@@ -36,18 +38,21 @@ var _ = BeforeSuite(func() {
 // This must be the only top-level test container.
 // Other tests and test containers must be listed in this.
 var _ = Describe("Test applications", func() {
-	if !withKind {
+	if doCeph {
 		Context("prepareNodes", prepareNodes)
-	}
-	if doOSDPodSpreadTest {
 		Context("prepareLoadPods", prepareLoadPods)
-	}
-	Context("setup", testSetup)
-	if doBootstrap {
+		Context("setup", testSetup)
+		Context("OSDPodsSpread", testOSDPodsSpreadAll)
+		Context("rookOperator", testRookOperator)
+		Context("MONPodsSpread", testMONPodsSpreadAll)
+		Context("rookRGW", testRookRGW)
+		Context("rookRBD", testRookRBDAll)
 		return
 	}
-	if doOSDPodSpreadTest {
-		Context("OSDPodsSpread", testOSDPodsSpreadAll)
+
+	Context("prepareNodes", prepareNodes)
+	Context("setup", testSetup)
+	if doBootstrap {
 		return
 	}
 	if doReboot {
@@ -55,14 +60,10 @@ var _ = Describe("Test applications", func() {
 	}
 	Context("network-policy", testNetworkPolicy)
 	Context("metallb", testMetalLB)
-	if !withKind {
-		Context("external-dns", testExternalDNS)
-	}
+	Context("external-dns", testExternalDNS)
 	Context("cert-manager", testCertManager)
 	Context("contour", testContour)
-	if !withKind {
-		Context("machines-endpoints", testMachinesEndpoints)
-	}
+	Context("machines-endpoints", testMachinesEndpoints)
 	Context("kube-state-metrics", testKubeStateMetrics)
 	Context("prometheus", testPrometheus)
 	Context("grafana-operator", testGrafanaOperator)
@@ -72,21 +73,11 @@ var _ = Describe("Test applications", func() {
 	Context("ingress-health", testIngressHealth)
 	Context("prometheus-metrics", testPrometheusMetrics)
 	Context("metrics-server", testMetricsServer)
-	if !withKind {
-		Context("teleport", testTeleport)
-	}
 	Context("topolvm", testTopoLVM)
 	Context("elastic", testElastic)
-	if !withKind {
-		Context("argocd-ingress", testArgoCDIngress)
-	}
+	Context("argocd-ingress", testArgoCDIngress)
 	Context("admission", testAdmission)
-	if !withKind {
-		Context("bmc-reverse-proxy", testBMCReverseProxy)
-		Context("local-pv-provisioner", testLocalPVProvisioner)
-		Context("rookOperator", testRookOperator)
-		Context("MONPodsSpread", testMONPodsSpreadAll)
-		Context("rookRGW", testRookRGW)
-		Context("rookRBD", testRookRBDAll)
-	}
+	Context("bmc-reverse-proxy", testBMCReverseProxy)
+	Context("local-pv-provisioner", testLocalPVProvisioner)
+	Context("teleport", testTeleport)
 })
