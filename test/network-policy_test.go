@@ -83,53 +83,6 @@ spec:
 			return nil
 		}).Should(Succeed())
 
-		// connections to 8080 and 8443 of contour are rejected unless we register HTTPProxy
-		By("creating HTTPProxy")
-		fqdnHTTP := testID + "-http.test-netpol.gcp0.dev-ne.co"
-		fqdnHTTPS := testID + "-https.test-netpol.gcp0.dev-ne.co"
-		ingressRoute := fmt.Sprintf(`
-apiVersion: projectcontour.io/v1
-kind: HTTPProxy
-metadata:
-  name: tls
-  namespace: test-netpol
-  annotations:
-    kubernetes.io/tls-acme: "true"
-spec:
-  virtualhost:
-    fqdn: %s
-    tls:
-      secretName: testsecret
-  routes:
-    - conditions:
-        - prefix: /
-      services:
-        - name: testhttpd
-          port: 80
-    - conditions:
-        - prefix: /insecure
-      permitInsecure: true
-      services:
-        - name: testhttpd
-          port: 80
----
-apiVersion: projectcontour.io/v1
-kind: HTTPProxy
-metadata:
-  name: root
-  namespace: test-netpol
-spec:
-  virtualhost:
-    fqdn: %s
-  routes:
-    - conditions:
-        - prefix: /testhttpd
-      services:
-        - name: testhttpd
-          port: 80
-`, fqdnHTTPS, fqdnHTTP)
-		_, stderr, err = ExecAtWithInput(boot0, []byte(ingressRoute), "kubectl", "apply", "-f", "-")
-		Expect(err).NotTo(HaveOccurred(), "stderr: %s", stderr)
 		By("deploying ubuntu for network commands")
 		createUbuntuDebugPod("default")
 	})
