@@ -72,7 +72,7 @@ spec:
                 "steppedLine": false,
                 "targets": [
                     {
-                        "expr": "rate(ingresswatcher_http_get_successful_total{code=\"200 OK\"}[5m]) / on(job,path) rate(ingresswatcher_http_get_total[5m])\n",
+                        "expr": "rate(ingresswatcher_http_get_successful_total{code=\"200\"}[5m]) / ignoring(code)  rate(ingresswatcher_http_get_total[5m])\n",
                         "interval": "",
                         "legendFormat": "",
                         "refId": "A"
@@ -166,7 +166,7 @@ spec:
                 "steppedLine": false,
                 "targets": [
                     {
-                        "expr": "rate(ingresswatcher_http_get_successful_total{code!=\"200 OK\"}[5m])/  ignoring(code) group_left rate(ingresswatcher_http_get_total[5m])",
+                        "expr": "rate(ingresswatcher_http_get_successful_total{code!=\"200\"}[5m])/  ignoring(code) group_left rate(ingresswatcher_http_get_total[5m])",
                         "interval": "",
                         "legendFormat": "",
                         "refId": "A"
