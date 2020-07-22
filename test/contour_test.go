@@ -268,57 +268,7 @@ spec:
 
 		By("confirming created Certificate")
 		Eventually(func() error {
-			stdout, stderr, err := ExecAt(boot0, "kubectl", "get", "-n", "test-ingress", "certificate", "tls", "-o", "json")
-			if err != nil {
-				return fmt.Errorf("stdout: %s, stderr: %s, err: %v", stdout, stderr, err)
-			}
-
-			var cert certmanagerv1alpha2.Certificate
-			err = json.Unmarshal(stdout, &cert)
-			if err != nil {
-				return err
-			}
-
-			for _, st := range cert.Status.Conditions {
-				if st.Type != certmanagerv1alpha2.CertificateConditionReady {
-					continue
-				}
-				// debug output
-				fmt.Printf("certificate status. time: %s, status: %s, reason: %s, message: %s\n", st.LastTransitionTime.String(), st.Status, st.Reason, st.Message)
-
-				if st.Status == "True" {
-					return nil
-				}
-			}
-
-			// Check the CertificateRequest status (the result of ACME challenge).
-			// If the status is failed, delete the Certificate and force to retry the ACME challenge.
-			// The Certificate will be recreated by contour-plus.
-			certReq, err := getCertificateRequest(cert, "test-ingress")
-			if err != nil {
-				return err
-			}
-			for _, st := range certReq.Status.Conditions {
-				if st.Type != certmanagerv1alpha2.CertificateRequestConditionReady {
-					continue
-				}
-
-				if st.Reason == certmanagerv1alpha2.CertificateRequestReasonFailed {
-					log.Error("CertificateRequest failed", map[string]interface{}{
-						"certificate":        cert.Name,
-						"certificaterequest": certReq.Name,
-						"status":             st.Status,
-						"reason":             st.Reason,
-						"message":            st.Message,
-					})
-					stdout, stderr, err := ExecAt(boot0, "kubectl", "delete", "-n", "test-ingress", "certificate", "tls")
-					if err != nil {
-						return fmt.Errorf("stdout: %s, stderr: %s, err: %v", stdout, stderr, err)
-					}
-					return errors.New("recreate certificate")
-				}
-			}
-			return errors.New("certificate is not ready")
+			return checkCertificate("tls", "test-ingress")
 		}).Should(Succeed())
 
 		By("accessing with curl: http")
@@ -438,4 +388,87 @@ spec:
 		Expect(err).To(HaveOccurred())
 		Expect(string(stdout)).To(Equal("404"))
 	})
+}
+
+func getCertificateRequest(cert certmanagerv1alpha2.Certificate, namespace string) (*certmanagerv1alpha2.CertificateRequest, error) {
+	var certReqList certmanagerv1alpha2.CertificateRequestList
+	var targetCertReq *certmanagerv1alpha2.CertificateRequest
+
+	stdout, stderr, err := ExecAt(boot0, "kubectl", "get", "-n", namespace, "certificaterequest", "-o", "json")
+	if err != nil {
+		return nil, fmt.Errorf("stdout: %s, stderr: %s, err: %v", stdout, stderr, err)
+	}
+	err = json.Unmarshal(stdout, &certReqList)
+	if err != nil {
+		return nil, err
+	}
+
+OUTER:
+	for _, cr := range certReqList.Items {
+		for _, or := range cr.OwnerReferences {
+			if or.Name == cert.Name {
+				targetCertReq = &cr
+				break OUTER
+			}
+		}
+	}
+
+	if targetCertReq == nil {
+		return nil, fmt.Errorf("CertificateRequest is not found")
+	}
+	return targetCertReq, nil
+}
+
+func checkCertificate(name, namespace string) error {
+	stdout, stderr, err := ExecAt(boot0, "kubectl", "get", "-n", namespace, "certificate", name, "-o", "json")
+	if err != nil {
+		return fmt.Errorf("stdout: %s, stderr: %s, err: %v", stdout, stderr, err)
+	}
+
+	var cert certmanagerv1alpha2.Certificate
+	err = json.Unmarshal(stdout, &cert)
+	if err != nil {
+		return err
+	}
+
+	for _, st := range cert.Status.Conditions {
+		if st.Type != certmanagerv1alpha2.CertificateConditionReady {
+			continue
+		}
+		// debug output
+		fmt.Printf("certificate status. time: %s, status: %s, reason: %s, message: %s\n", st.LastTransitionTime.String(), st.Status, st.Reason, st.Message)
+
+		if st.Status == "True" {
+			return nil
+		}
+	}
+
+	// Check the CertificateRequest status (the result of ACME challenge).
+	// If the status is failed, delete the Certificate and force to retry the ACME challenge.
+	// The Certificate will be recreated by contour-plus.
+	certReq, err := getCertificateRequest(cert, namespace)
+	if err != nil {
+		return err
+	}
+	for _, st := range certReq.Status.Conditions {
+		if st.Type != certmanagerv1alpha2.CertificateRequestConditionReady {
+			continue
+		}
+
+		if st.Reason == certmanagerv1alpha2.CertificateRequestReasonFailed {
+			log.Error("CertificateRequest failed", map[string]interface{}{
+				"certificate":        cert.Name,
+				"certificaterequest": certReq.Name,
+				"status":             st.Status,
+				"reason":             st.Reason,
+				"message":            st.Message,
+			})
+			stdout, stderr, err := ExecAt(boot0, "kubectl", "delete", "-n", "test-ingress", "certificate", "tls")
+			if err != nil {
+				return fmt.Errorf("stdout: %s, stderr: %s, err: %v", stdout, stderr, err)
+			}
+			return errors.New("recreate certificate")
+		}
+	}
+	return errors.New("certificate is not ready")
 }
