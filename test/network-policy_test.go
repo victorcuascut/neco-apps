@@ -83,53 +83,6 @@ spec:
 			return nil
 		}).Should(Succeed())
 
-		// connections to 8080 and 8443 of contour are rejected unless we register HTTPProxy
-		By("creating HTTPProxy")
-		fqdnHTTP := testID + "-http.test-netpol.gcp0.dev-ne.co"
-		fqdnHTTPS := testID + "-https.test-netpol.gcp0.dev-ne.co"
-		ingressRoute := fmt.Sprintf(`
-apiVersion: projectcontour.io/v1
-kind: HTTPProxy
-metadata:
-  name: tls
-  namespace: test-netpol
-  annotations:
-    kubernetes.io/tls-acme: "true"
-spec:
-  virtualhost:
-    fqdn: %s
-    tls:
-      secretName: testsecret
-  routes:
-    - conditions:
-        - prefix: /
-      services:
-        - name: testhttpd
-          port: 80
-    - conditions:
-        - prefix: /insecure
-      permitInsecure: true
-      services:
-        - name: testhttpd
-          port: 80
----
-apiVersion: projectcontour.io/v1
-kind: HTTPProxy
-metadata:
-  name: root
-  namespace: test-netpol
-spec:
-  virtualhost:
-    fqdn: %s
-  routes:
-    - conditions:
-        - prefix: /testhttpd
-      services:
-        - name: testhttpd
-          port: 80
-`, fqdnHTTPS, fqdnHTTP)
-		_, stderr, err = ExecAtWithInput(boot0, []byte(ingressRoute), "kubectl", "apply", "-f", "-")
-		Expect(err).NotTo(HaveOccurred(), "stderr: %s", stderr)
 		By("deploying ubuntu for network commands")
 		createUbuntuDebugPod("default")
 	})
@@ -207,10 +160,6 @@ spec:
 		for _, pod := range podList.Items {
 			stdout, stderr, err := ExecAt(boot0, "kubectl", "exec", "-n", pod.Namespace, pod.Name, "--", "curl", testhttpdIP, "-m", "5")
 			Expect(err).To(HaveOccurred(), "stdout: %s, stderr: %s", stdout, stderr)
-		}
-
-		if withKind {
-			Skip("does not make sense with kindtest")
 		}
 
 		By("patching squid pods to add ubuntu-debug sidecar container")
@@ -326,10 +275,6 @@ spec:
 	})
 
 	It("should pass packets to node network for system services", func() {
-		if withKind {
-			Skip("does not make sense with kindtest")
-		}
-
 		By("accessing DNS port of some node")
 		stdout, stderr, err := ExecAtWithInput(boot0, []byte("Xclose"), "kubectl", "exec", "-i", "ubuntu", "--", "timeout", "3s", "telnet", nodeIP, "53", "-e", "X")
 		Expect(err).NotTo(HaveOccurred(), "stdout: %s, stderr: %s", stdout, stderr)
@@ -369,10 +314,6 @@ spec:
 	})
 
 	It("should filter icmp packets to BMC/Node/Bastion/switch networks", func() {
-		if withKind {
-			Skip("does not make sense with kindtest")
-		}
-
 		stdout, stderr, err := ExecAt(boot0, "sabactl", "machines", "get")
 		Expect(err).NotTo(HaveOccurred(), "stdout: %s, stderr: %s", stdout, stderr)
 

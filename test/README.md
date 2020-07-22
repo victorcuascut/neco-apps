@@ -23,23 +23,7 @@ dctest
     cd test
     make setup
     make test
-    make -f Makefile.dctest dctest
-    ```
-
-kindtest
---------
-
-1. Set `SECRET_DIR` environment variable to point the directory for `github.com/cybozu-private/neco-apps-secret`
-2. Push the current feature branch to GitHub.
-3. Prepare kindtest environment using `github.com/cybozu-private/neco-apps-secret`
-4. Run following commands to setup Argo CD and run tests.
-
-    ```console
-    cd test
-    make setup
-    make test
-    make -f Makefile.kindtest start
-    make -f Makefile.kindtest kindtest
+    make dctest
     ```
 
 `./account.json`

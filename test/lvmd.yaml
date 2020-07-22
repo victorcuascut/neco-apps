@@ -1,6 +1,0 @@
-socket-name: /tmp/kindtest/lvmd/lvmd.sock
-device-classes:
-  - name: "ssd"
-    volume-group: "kindtest-vg"
-    default: true
-    spare-gb: 1

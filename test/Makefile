@@ -23,7 +23,6 @@ KUSTOMIZE_VERSION = 3.6.1
 PROMTOOL_VERSION := 2.12.0
 TELEPORT_VERSION := 4.2.10
 KUBERNETES_VERSION = 1.17.4
-KIND_VERSION = 0.7.0
 ARGOCD_VERSION = 1.5.7
 
 install.yaml: $(shell find ../argocd/base)
@@ -49,8 +48,27 @@ code-check:
 
 test: code-check install.yaml test-alert-rules kustomize-check validation
 
-test-apps:
-	$(MAKE) -f Makefile.dctest dctest
+dctest: install.yaml
+	./test.sh
+
+dctest-ceph: install.yaml
+	CEPH=1 ./test.sh
+
+dctest-reboot: install.yaml
+	REBOOT=1 ./test.sh
+
+dctest-upgrade:
+	-git worktree remove /tmp/neco-apps
+	git worktree add /tmp/neco-apps $(BASE_BRANCH)
+	cp account.json /tmp/neco-apps/test
+	cd /tmp/neco-apps/test; \
+		if [ -f Makefile.dctest ]; then \
+			$(MAKE) test-apps BOOTSTRAP=1 COMMIT_ID=$(BASE_BRANCH); \
+		else \
+			$(MAKE) dctest BOOTSTRAP=1 COMMIT_ID=$(BASE_BRANCH); \
+		fi
+	cp /tmp/neco-apps/test/argocd-password.txt ./
+	UPGRADE=1 ./test.sh
 
 setup:
 	curl -sSLf -O https://storage.googleapis.com/kubernetes-release/release/v$(KUBERNETES_VERSION)/bin/linux/amd64/kubectl
@@ -65,7 +83,6 @@ setup:
 	$(SUDO) mv promtool /usr/local/bin/promtool
 	curl -sSLf https://get.gravitational.com/teleport-v$(TELEPORT_VERSION)-linux-amd64-bin.tar.gz | tar -xzvf - --strip-component=1 teleport/tsh
 	$(SUDO) mv tsh /usr/local/bin/tsh
-	cd /tmp; env GOFLAGS= GO111MODULE=on go get sigs.k8s.io/kind@v$(KIND_VERSION)
 	curl -sSLf -O https://github.com/argoproj/argo-cd/releases/download/v$(ARGOCD_VERSION)/argocd-linux-amd64
 	$(SUDO) mv argocd-linux-amd64 /usr/local/bin/argocd
 	chmod +x /usr/local/bin/argocd
@@ -74,4 +91,5 @@ setup:
 clean:
 	rm -f install.yaml
 
-.PHONY:	validation test-alert-rules kustomize-check code-check test test-apps setup clean
+.PHONY:	validation test-alert-rules kustomize-check code-check test \
+		dctest dctest-ceph dctest-reboot dctest-upgrade setup clean

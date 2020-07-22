@@ -1,7 +1,6 @@
 package test
 
 import (
-	"encoding/json"
 	"fmt"
 	"net/http"
 	"strconv"
@@ -9,7 +8,6 @@ import (
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	corev1 "k8s.io/api/core/v1"
 )
 
 func testArgoCDIngress() {
@@ -19,7 +17,7 @@ func testArgoCDIngress() {
 		manifest := fmt.Sprintf(`apiVersion: projectcontour.io/v1
 kind: HTTPProxy
 metadata:
-  name: argocd-server
+  name: argocd-server-test
   namespace: argocd
   annotations:
     kubernetes.io/tls-acme: "true"
@@ -28,7 +26,7 @@ spec:
   virtualhost:
     fqdn: %s
     tls:
-      secretName: argocd-server-cert
+      secretName: argocd-server-cert-test
   routes:
     # For static files and Dex APIs
     - conditions:
@@ -55,23 +53,14 @@ spec:
 
 		_, stderr, err := ExecAtWithInput(boot0, []byte(manifest), "kubectl", "apply", "-f", "-")
 		Expect(err).NotTo(HaveOccurred(), "stderr: %s", stderr)
+
+		By("confirming created Certificate")
+		Eventually(func() error {
+			return checkCertificate("argocd-server-test", "argocd")
+		}).Should(Succeed())
 	})
 
 	It("should login via HTTPProxy as admin", func() {
-		By("getting the ip address of the contour LoadBalancer")
-		stdout, _, err := ExecAt(boot0, "kubectl", "--namespace=ingress-bastion", "get", "service/envoy", "-o=json")
-		Expect(err).ShouldNot(HaveOccurred())
-
-		svc := new(corev1.Service)
-		err = json.Unmarshal(stdout, svc)
-		Expect(err).ShouldNot(HaveOccurred())
-		Expect(len(svc.Status.LoadBalancer.Ingress)).To(Equal(1))
-		lbIP := svc.Status.LoadBalancer.Ingress[0].IP
-
-		By("adding loadbalancer address entry to /etc/hosts")
-		_, stderr, err := ExecAt(boot0, "sudo", "bash", "-c", "'echo "+lbIP+" "+fqdn+" >> /etc/hosts'")
-		Expect(err).ShouldNot(HaveOccurred(), "stderr: %s", stderr)
-
 		By("logging in to Argo CD")
 		Eventually(func() error {
 			stdout, stderr, err := ExecAt(boot0, "argocd", "login", fqdn,
