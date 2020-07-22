@@ -388,6 +388,15 @@ spec:
 
 		_, stderr, err := ExecAtWithInput(boot0, []byte(manifest), "kubectl", "apply", "-f", "-")
 		Expect(err).NotTo(HaveOccurred(), "failed to create HTTPProxy. stderr: %s", stderr)
+
+		By("confirming created Certificate")
+		Eventually(func() error {
+			err := checkCertificate("ingress-health-global-test", "monitoring")
+			if err != nil {
+				return err
+			}
+			return checkCertificate("ingress-health-bastion-test", "monitoring")
+		}).Should(Succeed())
 	})
 
 	It("should replace ingress-watcher configuration file", func() {
@@ -514,6 +523,11 @@ spec:
 
 		_, stderr, err := ExecAtWithInput(boot0, []byte(manifest), "kubectl", "apply", "-f", "-")
 		Expect(err).NotTo(HaveOccurred(), "failed to create HTTPProxy. stderr: %s", stderr)
+
+		By("confirming created Certificate")
+		Eventually(func() error {
+			return checkCertificate("grafana-test", "monitoring")
+		}).Should(Succeed())
 	})
 
 	It("should have data sources and dashboards", func() {
