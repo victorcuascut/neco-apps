@@ -9,3 +9,6 @@ webhooks:
   - clientConfig:
       caBundle: null
     name: elastic-es-validation-v1beta1.k8s.elastic.co
+  - clientConfig:
+      caBundle: null
+    name: elastic-beat-validation-v1beta1.k8s.elastic.co
