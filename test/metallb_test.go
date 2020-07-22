@@ -150,10 +150,6 @@ spec:
 
 		By("access service from external")
 		Eventually(func() error {
-			if withKind {
-				return exec.Command("curl", targetIP, "-m", "5").Run()
-			}
-
 			return exec.Command("sudo", "nsenter", "-n", "-t", externalPID, "curl", targetIP, "-m", "5").Run()
 		}).Should(Succeed())
 	})
