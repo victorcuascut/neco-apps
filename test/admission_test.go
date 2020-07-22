@@ -151,10 +151,8 @@ spec:
 		_, _, err = ExecAt(boot0, "kubectl", "delete", "crd", "applications.argoproj.io")
 		Expect(err).Should(HaveOccurred())
 
-		if !withKind {
-			By("trying to delete a CephCluster")
-			_, _, err := ExecAt(boot0, "kubectl", "delete", "-n", "ceph-hdd", "cephclusters.ceph.rook.io", "ceph-hdd")
-			Expect(err).Should(HaveOccurred())
-		}
+		By("trying to delete a CephCluster")
+		_, _, err = ExecAt(boot0, "kubectl", "delete", "-n", "ceph-hdd", "cephclusters.ceph.rook.io", "ceph-hdd")
+		Expect(err).Should(HaveOccurred())
 	})
 }
