@@ -62,10 +62,6 @@ func testApplicationTargetRevision(t *testing.T) {
 			targetRevision: "release",
 		},
 		{
-			targetDirs:     filepath.Join(manifestDir, "argocd-config", "overlays", "kind"),
-			targetRevision: "release",
-		},
-		{
 			targetDirs:     filepath.Join(manifestDir, "argocd-config", "overlays", "tokyo0"),
 			targetRevision: "release",
 		},
