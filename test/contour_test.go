@@ -16,38 +16,15 @@ import (
 
 var ingressNamespaces = []string{"ingress-global", "ingress-forest", "ingress-bastion"}
 
-func testContour() {
+func prepareContour() {
 	It("should create test-ingress namespace", func() {
 		ExecSafeAt(boot0, "kubectl", "delete", "namespace", "test-ingress", "--ignore-not-found=true")
 		createNamespaceIfNotExists("test-ingress")
 		ExecSafeAt(boot0, "kubectl", "annotate", "namespaces", "test-ingress", "i-am-sure-to-delete=test-ingress")
 	})
 
-	It("should be deployed successfully", func() {
-		Eventually(func() error {
-			for _, ns := range ingressNamespaces {
-				stdout, stderr, err := ExecAt(boot0, "kubectl", "--namespace="+ns,
-					"get", "deployment/contour", "-o=json")
-				if err != nil {
-					return fmt.Errorf("stdout: %s, stderr: %s, err: %v", stdout, stderr, err)
-				}
-
-				deployment := new(appsv1.Deployment)
-				err = json.Unmarshal(stdout, deployment)
-				if err != nil {
-					return err
-				}
-
-				if deployment.Status.AvailableReplicas != 2 {
-					return fmt.Errorf("contour deployment's AvailableReplica is not 2 in %s: %d", ns, int(deployment.Status.AvailableReplicas))
-				}
-			}
-			return nil
-		}).Should(Succeed())
-	})
-
-	It("should deploy HTTPProxy", func() {
-		By("deployment Pods")
+	It("should prepare resoures", func() {
+		By("creating pod and service")
 		deployYAML := `
 apiVersion: apps/v1
 kind: Deployment
@@ -101,49 +78,6 @@ spec:
 `
 		_, stderr, err := ExecAtWithInput(boot0, []byte(deployYAML), "kubectl", "apply", "-f", "-")
 		Expect(err).NotTo(HaveOccurred(), "stderr: %s", stderr)
-
-		By("waiting pods are ready")
-		Eventually(func() error {
-			stdout, _, err := ExecAt(boot0, "kubectl", "-n", "test-ingress", "get", "deployments/testhttpd", "-o", "json")
-			if err != nil {
-				return err
-			}
-
-			deployment := new(appsv1.Deployment)
-			err = json.Unmarshal(stdout, deployment)
-			if err != nil {
-				return err
-			}
-
-			if deployment.Status.ReadyReplicas != 2 {
-				return errors.New("ReadyReplicas is not 2")
-			}
-			return nil
-		}).Should(Succeed())
-
-		By("checking PodDisruptionBudget for contour Deployment")
-		for _, ns := range ingressNamespaces {
-			pdb := policyv1beta1.PodDisruptionBudget{}
-			stdout, stderr, err := ExecAt(boot0, "kubectl", "get", "poddisruptionbudgets", "contour-pdb", "-n", ns, "-o", "json")
-			if err != nil {
-				Expect(err).ShouldNot(HaveOccurred(), "stdout=%s, stderr=%s", stdout, stderr)
-			}
-			err = json.Unmarshal(stdout, &pdb)
-			Expect(err).ShouldNot(HaveOccurred())
-			Expect(pdb.Status.CurrentHealthy).Should(Equal(int32(2)), "namespace=%s", ns)
-		}
-
-		By("checking PodDisruptionBudget for envoy Deployment")
-		for _, ns := range ingressNamespaces {
-			pdb := policyv1beta1.PodDisruptionBudget{}
-			stdout, stderr, err := ExecAt(boot0, "kubectl", "get", "poddisruptionbudgets", "envoy-pdb", "-n", ns, "-o", "json")
-			if err != nil {
-				Expect(err).ShouldNot(HaveOccurred(), "stdout=%s, stderr=%s", stdout, stderr)
-			}
-			err = json.Unmarshal(stdout, &pdb)
-			Expect(err).ShouldNot(HaveOccurred())
-			Expect(pdb.Status.CurrentHealthy).Should(Equal(int32(3)), "namespace=%s", ns)
-		}
 
 		By("creating HTTPProxy")
 		fqdnHTTP := testID + "-http.test-ingress.gcp0.dev-ne.co"
@@ -212,6 +146,80 @@ spec:
 `, fqdnHTTPS, fqdnHTTP, fqdnBastion)
 		_, stderr, err = ExecAtWithInput(boot0, []byte(ingressRoute), "kubectl", "apply", "-f", "-")
 		Expect(err).NotTo(HaveOccurred(), "stderr: %s", stderr)
+	})
+}
+
+func testContour() {
+	It("should be deployed successfully", func() {
+		Eventually(func() error {
+			for _, ns := range ingressNamespaces {
+				stdout, stderr, err := ExecAt(boot0, "kubectl", "--namespace="+ns,
+					"get", "deployment/contour", "-o=json")
+				if err != nil {
+					return fmt.Errorf("stdout: %s, stderr: %s, err: %v", stdout, stderr, err)
+				}
+
+				deployment := new(appsv1.Deployment)
+				err = json.Unmarshal(stdout, deployment)
+				if err != nil {
+					return err
+				}
+
+				if deployment.Status.AvailableReplicas != 2 {
+					return fmt.Errorf("contour deployment's AvailableReplica is not 2 in %s: %d", ns, int(deployment.Status.AvailableReplicas))
+				}
+			}
+			return nil
+		}).Should(Succeed())
+	})
+
+	It("should deploy HTTPProxy", func() {
+		By("waiting pods are ready")
+		Eventually(func() error {
+			stdout, _, err := ExecAt(boot0, "kubectl", "-n", "test-ingress", "get", "deployments/testhttpd", "-o", "json")
+			if err != nil {
+				return err
+			}
+
+			deployment := new(appsv1.Deployment)
+			err = json.Unmarshal(stdout, deployment)
+			if err != nil {
+				return err
+			}
+
+			if deployment.Status.ReadyReplicas != 2 {
+				return errors.New("ReadyReplicas is not 2")
+			}
+			return nil
+		}).Should(Succeed())
+
+		By("checking PodDisruptionBudget for contour Deployment")
+		for _, ns := range ingressNamespaces {
+			pdb := policyv1beta1.PodDisruptionBudget{}
+			stdout, stderr, err := ExecAt(boot0, "kubectl", "get", "poddisruptionbudgets", "contour-pdb", "-n", ns, "-o", "json")
+			if err != nil {
+				Expect(err).ShouldNot(HaveOccurred(), "stdout=%s, stderr=%s", stdout, stderr)
+			}
+			err = json.Unmarshal(stdout, &pdb)
+			Expect(err).ShouldNot(HaveOccurred())
+			Expect(pdb.Status.CurrentHealthy).Should(Equal(int32(2)), "namespace=%s", ns)
+		}
+
+		By("checking PodDisruptionBudget for envoy Deployment")
+		for _, ns := range ingressNamespaces {
+			pdb := policyv1beta1.PodDisruptionBudget{}
+			stdout, stderr, err := ExecAt(boot0, "kubectl", "get", "poddisruptionbudgets", "envoy-pdb", "-n", ns, "-o", "json")
+			if err != nil {
+				Expect(err).ShouldNot(HaveOccurred(), "stdout=%s, stderr=%s", stdout, stderr)
+			}
+			err = json.Unmarshal(stdout, &pdb)
+			Expect(err).ShouldNot(HaveOccurred())
+			Expect(pdb.Status.CurrentHealthy).Should(Equal(int32(3)), "namespace=%s", ns)
+		}
+
+		fqdnHTTP := testID + "-http.test-ingress.gcp0.dev-ne.co"
+		fqdnHTTPS := testID + "-https.test-ingress.gcp0.dev-ne.co"
+		fqdnBastion := testID + "-bastion.test-ingress.gcp0.dev-ne.co"
 
 		By("getting contour service")
 		var targetIP string
