@@ -23,7 +23,7 @@ func prepareContour() {
 		ExecSafeAt(boot0, "kubectl", "annotate", "namespaces", "test-ingress", "i-am-sure-to-delete=test-ingress")
 	})
 
-	It("should prepare resoures", func() {
+	It("should prepare resources", func() {
 		By("creating pod and service")
 		deployYAML := `
 apiVersion: apps/v1
