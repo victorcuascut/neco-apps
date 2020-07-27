@@ -299,13 +299,17 @@ func testNetworkPolicy() {
 			}
 
 			stdout, stderr, err := ExecAtWithInput(boot0, []byte("Xclose"), "kubectl", "-n", "internet-egress", "exec", "-i", podName, "-c", "ubuntu", "--", "timeout", "3s", "telnet", nodeIP, "53", "-e", "X")
-			switch t := err.(type) {
-			case *ssh.ExitError:
+			switch {
+			case errors.Is(err, &ssh.ExitError{}):
 				// telnet command returns 124 when it times out
+				var t *ssh.ExitError
+				errors.As(err, &t)
 				if t.ExitStatus() != 124 {
 					return fmt.Errorf("exit status should be 124: %d, stdout: %s, stderr: %s, err: %v", t.ExitStatus(), stdout, stderr, err)
 				}
-			case *exec.ExitError:
+			case errors.Is(err, &exec.ExitError{}):
+				var t *exec.ExitError
+				errors.As(err, &t)
 				if t.ExitCode() != 124 {
 					return fmt.Errorf("exit status should be 124: %d, stdout: %s, stderr: %s, err: %v", t.ExitCode(), stdout, stderr, err)
 				}
@@ -323,13 +327,17 @@ func testNetworkPolicy() {
 		By("accessing DNS port of some node as unbound")
 		Eventually(func() error {
 			stdout, stderr, err := ExecAtWithInput(boot0, []byte("Xclose"), "kubectl", "-n", "internet-egress", "exec", "-i", unboundPodName, "-c", "ubuntu", "--", "timeout", "3s", "telnet", nodeIP, "53", "-e", "X")
-			switch t := err.(type) {
-			case *ssh.ExitError:
+			switch {
+			case errors.Is(err, &ssh.ExitError{}):
 				// telnet command returns 124 when it times out
+				var t *ssh.ExitError
+				errors.As(err, &t)
 				if t.ExitStatus() != 124 {
 					return fmt.Errorf("exit status should be 124: %d, stdout: %s, stderr: %s, err: %v", t.ExitStatus(), stdout, stderr, err)
 				}
-			case *exec.ExitError:
+			case errors.Is(err, &exec.ExitError{}):
+				var t *exec.ExitError
+				errors.As(err, &t)
 				if t.ExitCode() != 124 {
 					return fmt.Errorf("exit status should be 124: %d, stdout: %s, stderr: %s, err: %v", t.ExitCode(), stdout, stderr, err)
 				}
