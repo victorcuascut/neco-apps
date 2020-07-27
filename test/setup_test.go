@@ -330,37 +330,6 @@ func applyAndWaitForApplications(overlay, commitID string) {
 	fmt.Printf("application list: %v\n", appList)
 	Expect(appList).ShouldNot(HaveLen(0))
 
-	// TODO: this block should be deleted after teleport-auth with Ceph PV is deployed on prod
-	if doUpgrade {
-		stdout := ExecSafeAt(boot0, "kubectl", "get", "-n", "teleport", "pvc", "teleport-storage-teleport-auth-0", "-o", "json")
-		var pvc corev1.PersistentVolumeClaim
-		err = json.Unmarshal(stdout, &pvc)
-		Expect(err).ShouldNot(HaveOccurred())
-
-		if pvc.Spec.StorageClassName != nil && *pvc.Spec.StorageClassName != "ceph-ssd-block" {
-			By("deleting old teleport-auth sts which uses TopoLVM PV")
-			Eventually(func() error {
-				appStdout, stderr, err := ExecAt(boot0, "argocd", "app", "get", "-o", "json", "teleport")
-				if err != nil {
-					return fmt.Errorf("stdout: %s, stderr: %s, err: %v", appStdout, stderr, err)
-				}
-				var app argocd.Application
-				err = json.Unmarshal(appStdout, &app)
-				if err != nil {
-					return fmt.Errorf("stdout: %s, err: %v", appStdout, err)
-				}
-				if app.Status.Sync.ComparedTo.Source.TargetRevision != commitID {
-					return errors.New("teleport does not have correct target yet")
-				}
-
-				return nil
-			}).Should(Succeed())
-
-			ExecSafeAt(boot0, "kubectl", "delete", "-n", "teleport", "pvc", "teleport-storage-teleport-auth-0", "--wait=0")
-			ExecSafeAt(boot0, "kubectl", "delete", "-n", "teleport", "sts", "teleport-auth")
-		}
-	}
-
 	By("waiting initialization")
 	checkAllAppsSynced := func() error {
 	OUTER:
@@ -382,16 +351,6 @@ func applyAndWaitForApplications(overlay, commitID string) {
 				st.Health.Status == argocd.HealthStatusHealthy &&
 				app.Operation == nil {
 				continue
-			}
-
-			// TODO: Remove this block after https://github.com/cybozu-go/neco-apps/pull/574 has been released
-			if doUpgrade && appName == "argocd-ingress" {
-				for _, ns := range []string{"ingress-forest", "ingress-bastion", "ingress-global"} {
-					stdout, stderr, err := ExecAt(boot0, "kubectl", "delete", "pod", "-n", ns, "-l=app.kubernetes.io/name=envoy")
-					if err != nil {
-						return fmt.Errorf("unable to delete envoy pods. stdout: %s, stderr: %s, err: %v", stdout, stderr, err)
-					}
-				}
 			}
 
 			// In upgrade test, sync without --force may cause temporal network disruption.
