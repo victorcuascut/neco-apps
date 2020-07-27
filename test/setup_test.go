@@ -213,7 +213,7 @@ func testSetup() {
 			setupArgoCD()
 		}
 		ExecSafeAt(boot0, "sed", "-i", "s/release/"+commitID+"/", "./neco-apps/argocd-config/base/*.yaml")
-		applyAndWaitForApplications("gcp", commitID)
+		applyAndWaitForApplications(commitID)
 	})
 
 	It("should set DNS", func() {
@@ -280,13 +280,13 @@ func testSetup() {
 	})
 }
 
-func applyAndWaitForApplications(overlay, commitID string) {
+func applyAndWaitForApplications(commitID string) {
 	By("creating Argo CD app")
 	Eventually(func() error {
 		stdout, stderr, err := ExecAt(boot0, "argocd", "app", "create", "argocd-config",
 			"--upsert",
 			"--repo", "https://github.com/cybozu-go/neco-apps.git",
-			"--path", "argocd-config/overlays/"+overlay,
+			"--path", "argocd-config/overlays/gcp",
 			"--dest-namespace", "argocd",
 			"--dest-server", "https://kubernetes.default.svc",
 			"--sync-policy", "none",
@@ -297,10 +297,10 @@ func applyAndWaitForApplications(overlay, commitID string) {
 		return nil
 	}).Should(Succeed())
 
-	ExecSafeAt(boot0, "cd", "./neco-apps", "&&", "argocd", "app", "sync", "argocd-config", "--local", "argocd-config/overlays/"+overlay, "--async")
+	ExecSafeAt(boot0, "cd", "./neco-apps", "&&", "argocd", "app", "sync", "argocd-config", "--local", "argocd-config/overlays/gcp", "--async")
 
 	By("getting application list")
-	stdout, _, err := kustomizeBuild("../argocd-config/overlays/" + overlay)
+	stdout, _, err := kustomizeBuild("../argocd-config/overlays/gcp")
 	Expect(err).ShouldNot(HaveOccurred())
 
 	var appList []string
