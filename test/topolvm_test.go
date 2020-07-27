@@ -11,18 +11,7 @@ import (
 	policyv1beta1 "k8s.io/api/policy/v1beta1"
 )
 
-func testTopoLVM() {
-	It("should apply PodDisruptionBudget to controller", func() {
-		By("checking PodDisruptionBudget for controller Deployment")
-		pdb := policyv1beta1.PodDisruptionBudget{}
-		stdout, stderr, err := ExecAt(boot0, "kubectl", "get", "poddisruptionbudgets", "controller-pdb", "-n", "topolvm-system", "-o", "json")
-		Expect(err).ShouldNot(HaveOccurred(), "stdout=%s, stderr=%s", stdout, stderr)
-
-		err = json.Unmarshal(stdout, &pdb)
-		Expect(err).ShouldNot(HaveOccurred())
-		Expect(pdb.Status.CurrentHealthy).Should(Equal(int32(2)))
-	})
-
+func prepareTopoLVM() {
 	ns := "test-topolvm"
 	It("should create test-topolvm namespace", func() {
 		ExecSafeAt(boot0, "kubectl", "delete", "namespace", ns, "--ignore-not-found=true")
@@ -30,9 +19,9 @@ func testTopoLVM() {
 		ExecSafeAt(boot0, "kubectl", "annotate", "namespaces", ns, "i-am-sure-to-delete="+ns)
 	})
 
-	It("should be mounted in specified path", func() {
-		By("deploying Pod with PVC")
-		podYAML := `apiVersion: v1
+	It("should create a Pod and a PVC", func() {
+		manifest := `
+apiVersion: v1
 kind: Pod
 metadata:
   name: ubuntu
@@ -50,8 +39,8 @@ spec:
   - name: my-volume
     persistentVolumeClaim:
       claimName: topo-pvc
-`
-		claimYAML := `apiVersion: v1
+---
+apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
   name: topo-pvc
@@ -63,14 +52,28 @@ spec:
       storage: 1Gi
   storageClassName: topolvm-provisioner
 `
-		stdout, stderr, err := ExecAtWithInput(boot0, []byte(claimYAML), "kubectl", "apply", "-n", ns, "-f", "-")
+		stdout, stderr, err := ExecAtWithInput(boot0, []byte(manifest), "kubectl", "apply", "-n", ns, "-f", "-")
 		Expect(err).ShouldNot(HaveOccurred(), "stdout=%s, stderr=%s", stdout, stderr)
-		stdout, stderr, err = ExecAtWithInput(boot0, []byte(podYAML), "kubectl", "apply", "-n", ns, "-f", "-")
+	})
+}
+
+func testTopoLVM() {
+	ns := "test-topolvm"
+	It("should apply PodDisruptionBudget to controller", func() {
+		By("checking PodDisruptionBudget for controller Deployment")
+		pdb := policyv1beta1.PodDisruptionBudget{}
+		stdout, stderr, err := ExecAt(boot0, "kubectl", "get", "poddisruptionbudgets", "controller-pdb", "-n", "topolvm-system", "-o", "json")
 		Expect(err).ShouldNot(HaveOccurred(), "stdout=%s, stderr=%s", stdout, stderr)
 
+		err = json.Unmarshal(stdout, &pdb)
+		Expect(err).ShouldNot(HaveOccurred())
+		Expect(pdb.Status.CurrentHealthy).Should(Equal(int32(2)))
+	})
+
+	It("should be mounted in specified path", func() {
 		By("confirming that the specified volume exists in the Pod")
 		Eventually(func() error {
-			stdout, stderr, err = ExecAt(boot0, "kubectl", "exec", "-n", ns, "ubuntu", "--", "mountpoint", "-d", "/test1")
+			stdout, stderr, err := ExecAt(boot0, "kubectl", "exec", "-n", ns, "ubuntu", "--", "mountpoint", "-d", "/test1")
 			if err != nil {
 				return fmt.Errorf("failed to check mount point. stdout: %s, stderr: %s, err: %v", stdout, stderr, err)
 			}
@@ -91,7 +94,7 @@ spec:
 
 		By("writing file under /test1")
 		writePath := "/test1/bootstrap.log"
-		stdout, stderr, err = ExecAt(boot0, "kubectl", "exec", "-n", ns, "ubuntu", "--", "cp", "/etc/passwd", writePath)
+		stdout, stderr, err := ExecAt(boot0, "kubectl", "exec", "-n", ns, "ubuntu", "--", "cp", "/etc/passwd", writePath)
 		Expect(err).ShouldNot(HaveOccurred(), "stdout=%s, stderr=%s", stdout, stderr)
 		stdout, stderr, err = ExecAt(boot0, "kubectl", "exec", "-n", ns, "ubuntu", "--", "sync")
 		Expect(err).ShouldNot(HaveOccurred(), "stdout=%s, stderr=%s", stdout, stderr)
