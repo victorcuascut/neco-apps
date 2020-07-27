@@ -222,8 +222,9 @@ func testAlertmanager() {
 	})
 }
 
-func testPushgateway() {
-	manifestBase := `apiVersion: projectcontour.io/v1
+func preparePushgateway() {
+	manifestBase := `
+apiVersion: projectcontour.io/v1
 kind: HTTPProxy
 metadata:
   name: pushgateway-bastion-test
@@ -263,7 +264,9 @@ spec:
 		_, stderr, err := ExecAtWithInput(boot0, []byte(manifest), "kubectl", "apply", "-f", "-")
 		Expect(err).NotTo(HaveOccurred(), "stderr: %s", stderr)
 	})
+}
 
+func testPushgateway() {
 	It("should be deployed successfully", func() {
 		Eventually(func() error {
 			stdout, _, err := ExecAt(boot0, "kubectl", "--namespace=monitoring",
@@ -309,35 +312,10 @@ spec:
 	})
 }
 
-func testIngressHealth() {
-	It("should be deployed successfully", func() {
-		By("for ingress-health (testhttpd)")
-		Eventually(func() error {
-			stdout, _, err := ExecAt(boot0, "kubectl", "--namespace=monitoring",
-				"get", "deployment/ingress-health", "-o=json")
-			if err != nil {
-				return err
-			}
-			deployment := new(appsv1.Deployment)
-			err = json.Unmarshal(stdout, deployment)
-			if err != nil {
-				return err
-			}
-
-			if int(deployment.Status.AvailableReplicas) != 1 {
-				return fmt.Errorf("AvailableReplicas is not 1: %d", int(deployment.Status.AvailableReplicas))
-			}
-
-			stdout, stderr, err := ExecAt(boot0, "kubectl", "-n", "monitoring", "get", "service", "ingress-health-http")
-			if err != nil {
-				return fmt.Errorf("unable to get ingress-health-http. stdout: %s, stderr: %s, err: %w", stdout, stderr, err)
-			}
-			return nil
-		}).Should(Succeed())
-	})
-
+func prepareIngressHealth() {
 	It("should create HTTPProxy for ingress-watcher", func() {
-		manifest := fmt.Sprintf(`apiVersion: projectcontour.io/v1
+		manifest := fmt.Sprintf(`
+apiVersion: projectcontour.io/v1
 kind: HTTPProxy
 metadata:
   name: ingress-health-global-test
@@ -388,6 +366,34 @@ spec:
 
 		_, stderr, err := ExecAtWithInput(boot0, []byte(manifest), "kubectl", "apply", "-f", "-")
 		Expect(err).NotTo(HaveOccurred(), "failed to create HTTPProxy. stderr: %s", stderr)
+	})
+}
+
+func testIngressHealth() {
+	It("should be deployed successfully", func() {
+		By("for ingress-health (testhttpd)")
+		Eventually(func() error {
+			stdout, _, err := ExecAt(boot0, "kubectl", "--namespace=monitoring",
+				"get", "deployment/ingress-health", "-o=json")
+			if err != nil {
+				return err
+			}
+			deployment := new(appsv1.Deployment)
+			err = json.Unmarshal(stdout, deployment)
+			if err != nil {
+				return err
+			}
+
+			if int(deployment.Status.AvailableReplicas) != 1 {
+				return fmt.Errorf("AvailableReplicas is not 1: %d", int(deployment.Status.AvailableReplicas))
+			}
+
+			stdout, stderr, err := ExecAt(boot0, "kubectl", "-n", "monitoring", "get", "service", "ingress-health-http")
+			if err != nil {
+				return fmt.Errorf("unable to get ingress-health-http. stdout: %s, stderr: %s, err: %w", stdout, stderr, err)
+			}
+			return nil
+		}).Should(Succeed())
 
 		By("confirming created Certificate")
 		Eventually(func() error {
@@ -474,28 +480,8 @@ func getLoadBalancerIP(namespace, service string) (string, error) {
 	return svc.Status.LoadBalancer.Ingress[0].IP, nil
 }
 
-func testGrafanaOperator() {
-	It("should be deployed successfully", func() {
-		Eventually(func() error {
-			stdout, _, err := ExecAt(boot0, "kubectl", "--namespace=monitoring",
-				"get", "deployment/grafana-deployment", "-o=json")
-			if err != nil {
-				return err
-			}
-			deployment := new(appsv1.Deployment)
-			err = json.Unmarshal(stdout, deployment)
-			if err != nil {
-				return err
-			}
-
-			if int(deployment.Status.ReadyReplicas) != 1 {
-				return fmt.Errorf("ReadyReplicas is not 1: %d", int(deployment.Status.ReadyReplicas))
-			}
-			return nil
-		}).Should(Succeed())
-	})
-
-	It("should create HTTPProxy for ingress-watcher", func() {
+func prepareGrafanaOperator() {
+	It("should create HTTPProxy for grafana", func() {
 		manifest := fmt.Sprintf(`
 apiVersion: projectcontour.io/v1
 kind: HTTPProxy
@@ -523,6 +509,28 @@ spec:
 
 		_, stderr, err := ExecAtWithInput(boot0, []byte(manifest), "kubectl", "apply", "-f", "-")
 		Expect(err).NotTo(HaveOccurred(), "failed to create HTTPProxy. stderr: %s", stderr)
+	})
+}
+
+func testGrafanaOperator() {
+	It("should be deployed successfully", func() {
+		Eventually(func() error {
+			stdout, _, err := ExecAt(boot0, "kubectl", "--namespace=monitoring",
+				"get", "deployment/grafana-deployment", "-o=json")
+			if err != nil {
+				return err
+			}
+			deployment := new(appsv1.Deployment)
+			err = json.Unmarshal(stdout, deployment)
+			if err != nil {
+				return err
+			}
+
+			if int(deployment.Status.ReadyReplicas) != 1 {
+				return fmt.Errorf("ReadyReplicas is not 1: %d", int(deployment.Status.ReadyReplicas))
+			}
+			return nil
+		}).Should(Succeed())
 
 		By("confirming created Certificate")
 		Eventually(func() error {

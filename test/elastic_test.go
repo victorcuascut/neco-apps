@@ -10,33 +10,10 @@ import (
 	"sigs.k8s.io/yaml"
 )
 
-func testElastic() {
-	It("should create test-ingress namespace", func() {
-		ExecSafeAt(boot0, "kubectl", "delete", "elasticsearch", "sample", "-n", "sandbox", "--ignore-not-found=true")
-	})
-
-	It("should be deployed successfully", func() {
-		Eventually(func() error {
-			stdout, _, err := ExecAt(boot0, "kubectl", "--namespace=elastic-system",
-				"get", "statefulset/elastic-operator", "-o=json")
-			if err != nil {
-				return err
-			}
-
-			ss := new(appsv1.StatefulSet)
-			err = json.Unmarshal(stdout, ss)
-			if err != nil {
-				return err
-			}
-
-			if ss.Status.ReadyReplicas != 1 {
-				return fmt.Errorf("elastic-operator statefulset's ReadyReplica is not 1: %d", int(ss.Status.ReadyReplicas))
-			}
-			return nil
-		}).Should(Succeed())
-	})
-	It("should deploy Elasticsearch cluster", func() {
-		elasticYAML := `apiVersion: elasticsearch.k8s.elastic.co/v1beta1
+func prepareElastic() {
+	It("should create Elasticsearch cluster", func() {
+		elasticYAML := `
+apiVersion: elasticsearch.k8s.elastic.co/v1beta1
 kind: Elasticsearch
 metadata:
   name: sample
@@ -96,7 +73,32 @@ spec:
 `
 		_, stderr, err := ExecAtWithInput(boot0, []byte(elasticYAML), "kubectl", "apply", "-f", "-")
 		Expect(err).NotTo(HaveOccurred(), "stderr: %s", stderr)
+	})
+}
 
+func testElastic() {
+	It("should be deployed successfully", func() {
+		Eventually(func() error {
+			stdout, _, err := ExecAt(boot0, "kubectl", "--namespace=elastic-system",
+				"get", "statefulset/elastic-operator", "-o=json")
+			if err != nil {
+				return err
+			}
+
+			ss := new(appsv1.StatefulSet)
+			err = json.Unmarshal(stdout, ss)
+			if err != nil {
+				return err
+			}
+
+			if ss.Status.ReadyReplicas != 1 {
+				return fmt.Errorf("elastic-operator statefulset's ReadyReplica is not 1: %d", int(ss.Status.ReadyReplicas))
+			}
+			return nil
+		}).Should(Succeed())
+	})
+
+	It("should deploy Elasticsearch cluster", func() {
 		By("waiting Elasticsearch resource health becomes green")
 		Eventually(func() error {
 			stdout, stderr, err := ExecAt(
