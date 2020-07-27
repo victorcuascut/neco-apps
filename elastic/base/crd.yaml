@@ -31,4 +31,12 @@ kind: CustomResourceDefinition
 metadata:
   creationTimestamp: null
   name: beats.beat.k8s.elastic.co
+spec:
+  validation:
+    openAPIV3Schema:
+      properties:
+        spec:
+          properties:
+            daemonSet:
+              properties: null
 status: null
