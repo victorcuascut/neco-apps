@@ -10,11 +10,11 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-func testArgoCDIngress() {
-	fqdn := testID + "-argocd.gcp0.dev-ne.co"
-
+func prepareArgoCDIngress() {
+	argocdFQDN := testID + "-argocd.gcp0.dev-ne.co"
 	It("should create HTTPProxy for ArgoCD", func() {
-		manifest := fmt.Sprintf(`apiVersion: projectcontour.io/v1
+		manifest := fmt.Sprintf(`
+apiVersion: projectcontour.io/v1
 kind: HTTPProxy
 metadata:
   name: argocd-server-test
@@ -49,12 +49,16 @@ spec:
       timeoutPolicy:
         response: 2m
         idle: 5m
-`, fqdn)
+`, argocdFQDN)
 
 		_, stderr, err := ExecAtWithInput(boot0, []byte(manifest), "kubectl", "apply", "-f", "-")
 		Expect(err).NotTo(HaveOccurred(), "stderr: %s", stderr)
+	})
+}
 
-		By("confirming created Certificate")
+func testArgoCDIngress() {
+	argocdFQDN := testID + "-argocd.gcp0.dev-ne.co"
+	It("should confirm created Certificate", func() {
 		Eventually(func() error {
 			return checkCertificate("argocd-server-test", "argocd")
 		}).Should(Succeed())
@@ -63,7 +67,7 @@ spec:
 	It("should login via HTTPProxy as admin", func() {
 		By("logging in to Argo CD")
 		Eventually(func() error {
-			stdout, stderr, err := ExecAt(boot0, "argocd", "login", fqdn,
+			stdout, stderr, err := ExecAt(boot0, "argocd", "login", argocdFQDN,
 				"--insecure", "--username", "admin", "--password", loadArgoCDPassword())
 			if err != nil {
 				return fmt.Errorf("stdout: %s, stderr: %s, err: %v", stdout, stderr, err)
@@ -75,7 +79,7 @@ spec:
 	It("should make SSO enabled", func() {
 		By("requesting to web UI with https")
 		stdout, stderr, err := ExecAt(boot0,
-			"curl", "-skL", "https://"+fqdn,
+			"curl", "-skL", "https://"+argocdFQDN,
 			"-o", "/dev/null",
 			"-w", `'%{http_code}\n%{content_type}'`,
 		)
@@ -86,7 +90,7 @@ spec:
 
 		By("requesting to argocd-dex-server via argocd-server with https")
 		stdout, stderr, err = ExecAt(boot0,
-			"curl", "-skL", "https://"+fqdn+"/api/dex/.well-known/openid-configuration",
+			"curl", "-skL", "https://"+argocdFQDN+"/api/dex/.well-known/openid-configuration",
 			"-o", "/dev/null",
 			"-w", `'%{http_code}\n%{content_type}'`,
 		)
@@ -97,7 +101,7 @@ spec:
 
 		By("requesting to argocd-server with gRPC")
 		stdout, stderr, err = ExecAt(boot0,
-			"curl", "-skL", "https://"+fqdn+"/account.AccountService/Read",
+			"curl", "-skL", "https://"+argocdFQDN+"/account.AccountService/Read",
 			"-H", "'Content-Type: application/grpc'",
 			"-o", "/dev/null",
 			"-w", `'%{http_code}\n%{content_type}'`,
@@ -109,7 +113,7 @@ spec:
 
 		By("requesting to argocd-server with gRPC-Web")
 		stdout, stderr, err = ExecAt(boot0,
-			"curl", "-skL", "https://"+fqdn+"/application.ApplicationService/Read",
+			"curl", "-skL", "https://"+argocdFQDN+"/application.ApplicationService/Read",
 			"-H", "'Content-Type: application/grpc-web+proto'",
 			"-o", "/dev/null",
 			"-w", `'%{http_code}\n%{content_type}'`,

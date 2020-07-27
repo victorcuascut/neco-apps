@@ -12,6 +12,69 @@ import (
 	corev1 "k8s.io/api/core/v1"
 )
 
+func prepareMetalLB() {
+
+	It("should deploy load balancer type service", func() {
+		By("creating deployments and service")
+		manifest := `
+apiVersion: crd.projectcalico.org/v1
+kind: NetworkPolicy
+metadata:
+  name: ingress-httpdtest
+  namespace: default
+spec:
+  order: 2000.0
+  selector: app.kubernetes.io/name == 'testhttpd'
+  types:
+    - Ingress
+  ingress:
+    - action: Allow
+      protocol: TCP
+      destination:
+        ports:
+          - 8000
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: testhttpd
+  namespace: default
+  labels:
+    app.kubernetes.io/name: testhttpd
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: testhttpd
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: testhttpd
+    spec:
+      containers:
+      - name: testhttpd
+        image: quay.io/cybozu/testhttpd:0
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: testhttpd
+  namespace: default
+spec:
+  selector:
+    app.kubernetes.io/name: testhttpd
+  ports:
+  - protocol: TCP
+    port: 80
+    targetPort: 8000
+  type: LoadBalancer
+  externalTrafficPolicy: Local
+`
+		_, stderr, err := ExecAtWithInput(boot0, []byte(manifest), "kubectl", "create", "-f", "-")
+		Expect(err).NotTo(HaveOccurred(), "stderr: %s", stderr)
+	})
+}
+
 func testMetalLB() {
 	It("should be deployed successfully", func() {
 		Eventually(func() error {
@@ -53,33 +116,6 @@ func testMetalLB() {
 			}
 			return nil
 		}).Should(Succeed())
-	})
-
-	It("should deploy load balancer type service", func() {
-		By("deployment Pods")
-		netpol := `
-apiVersion: crd.projectcalico.org/v1
-kind: NetworkPolicy
-metadata:
-  name: ingress-httpdtest
-  namespace: default
-spec:
-  order: 2000.0
-  selector: app.kubernetes.io/name == 'testhttpd'
-  types:
-    - Ingress
-  ingress:
-    - action: Allow
-      protocol: TCP
-      destination:
-        ports:
-          - 8000
-`
-		_, stderr, err := ExecAtWithInput(boot0, []byte(netpol), "kubectl", "create", "-f", "-")
-		Expect(err).NotTo(HaveOccurred(), "stderr: %s", stderr)
-
-		_, stderr, err = ExecAt(boot0, "kubectl", "run", "testhttpd", "-l=app.kubernetes.io/name=testhttpd", "--image=quay.io/cybozu/testhttpd:0", "--replicas=2")
-		Expect(err).NotTo(HaveOccurred(), "stderr: %s", stderr)
 
 		By("waiting pods are ready")
 		Eventually(func() error {
@@ -99,27 +135,9 @@ spec:
 			}
 			return nil
 		}).Should(Succeed())
+	})
 
-		By("create Service")
-		loadBalancer := `
-kind: Service
-apiVersion: v1
-metadata:
-  name: testhttpd
-  namespace: default
-spec:
-  selector:
-    app.kubernetes.io/name: testhttpd
-  ports:
-  - protocol: TCP
-    port: 80
-    targetPort: 8000
-  type: LoadBalancer
-  externalTrafficPolicy: Local
-`
-		_, stderr, err = ExecAtWithInput(boot0, []byte(loadBalancer), "kubectl", "create", "-f", "-")
-		Expect(err).NotTo(HaveOccurred(), "stderr: %s", stderr)
-
+	It("should work", func() {
 		By("waiting service are ready")
 		var targetIP string
 		Eventually(func() error {
