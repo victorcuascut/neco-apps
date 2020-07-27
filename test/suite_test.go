@@ -58,6 +58,20 @@ var _ = Describe("Test applications", func() {
 	if doReboot {
 		Context("reboot", testRebootAllNodes)
 	}
+
+	// preparing resources before test to make things faster
+	Context("preparing argocd-ingress", prepareArgoCDIngress)
+	Context("preparing contour", prepareContour)
+	Context("preparing elastic", prepareElastic)
+	Context("preparing local-pv-provisioner", prepareLocalPVProvisioner)
+	Context("preparing metallb", prepareMetalLB)
+	Context("preparing pushgateway", preparePushgateway)
+	Context("preparing ingress-health", prepareIngressHealth)
+	Context("preparing grafana-operator", prepareGrafanaOperator)
+	Context("preparing topolvm", prepareTopoLVM)
+	Context("preparing network-policy", prepareNetworkPolicy) // this must be the last preparation.
+
+	// running tests
 	Context("network-policy", testNetworkPolicy)
 	Context("metallb", testMetalLB)
 	Context("contour", testContour)
