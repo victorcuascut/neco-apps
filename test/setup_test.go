@@ -319,10 +319,8 @@ func applyAndWaitForApplications(overlay, commitID string) {
 		}
 
 		// Skip if the app is for tenants
-		if res, ok := app.Labels["is-tenant"]; ok {
-			if res == "true" {
-				continue
-			}
+		if app.Labels["is-tenant"] == "true" {
+			continue
 		}
 
 		appList = append(appList, app.Name)
@@ -346,9 +344,8 @@ func applyAndWaitForApplications(overlay, commitID string) {
 			if app.Status.Sync.ComparedTo.Source.TargetRevision != commitID {
 				return errors.New(appName + " does not have correct target yet")
 			}
-			st := app.Status
-			if st.Sync.Status == argocd.SyncStatusCodeSynced &&
-				st.Health.Status == argocd.HealthStatusHealthy &&
+			if app.Status.Sync.Status == argocd.SyncStatusCodeSynced &&
+				app.Status.Health.Status == argocd.HealthStatusHealthy &&
 				app.Operation == nil {
 				continue
 			}
@@ -357,7 +354,7 @@ func applyAndWaitForApplications(overlay, commitID string) {
 			// It leads to sync-error of other applications,
 			// so sync manually sync-error apps in upgrade test.
 			if doUpgrade {
-				for _, cond := range st.Conditions {
+				for _, cond := range app.Status.Conditions {
 					if cond.Type == argocd.ApplicationConditionSyncError {
 						stdout, stderr, err := ExecAt(boot0, "argocd", "app", "sync", appName)
 						if err != nil {
