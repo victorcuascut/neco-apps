@@ -71,6 +71,7 @@ dctest-upgrade:
 	UPGRADE=1 ./test.sh
 
 setup:
+	$(SUDO) apt-get update && $(SUDO) apt-get -y install wget
 	curl -sSLf -O https://storage.googleapis.com/kubernetes-release/release/v$(KUBERNETES_VERSION)/bin/linux/amd64/kubectl
 	$(SUDO) mv kubectl /usr/local/bin/kubectl
 	chmod +x /usr/local/bin/kubectl
@@ -81,7 +82,9 @@ setup:
 	go install github.com/onsi/ginkgo/ginkgo
 	curl -sSLf https://github.com/prometheus/prometheus/releases/download/v$(PROMTOOL_VERSION)/prometheus-$(PROMTOOL_VERSION).linux-amd64.tar.gz | tar -xzvf - --strip-components=1 prometheus-$(PROMTOOL_VERSION).linux-amd64/promtool
 	$(SUDO) mv promtool /usr/local/bin/promtool
-	curl -sSLf https://get.gravitational.com/teleport-v$(TELEPORT_VERSION)-linux-amd64-bin.tar.gz | tar -xzvf - --strip-component=1 teleport/tsh
+	wget -O /tmp/teleport.tgz --no-verbose https://get.gravitational.com/teleport-v$(TELEPORT_VERSION)-linux-amd64-bin.tar.gz
+	tar -xzvf /tmp/teleport.tgz --strip-component=1 teleport/tsh
+	rm -f /tmp/teleport.tgz
 	$(SUDO) mv tsh /usr/local/bin/tsh
 	curl -sSLf -O https://github.com/argoproj/argo-cd/releases/download/v$(ARGOCD_VERSION)/argocd-linux-amd64
 	$(SUDO) mv argocd-linux-amd64 /usr/local/bin/argocd
