@@ -71,7 +71,7 @@ dctest-upgrade:
 	UPGRADE=1 ./test.sh
 
 setup:
-	apt-get update && apt-get -y install wget
+	$(SUDO) apt-get update && $(SUDO) apt-get -y install wget
 	curl -sSLf -O https://storage.googleapis.com/kubernetes-release/release/v$(KUBERNETES_VERSION)/bin/linux/amd64/kubectl
 	$(SUDO) mv kubectl /usr/local/bin/kubectl
 	chmod +x /usr/local/bin/kubectl
