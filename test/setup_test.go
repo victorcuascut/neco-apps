@@ -180,23 +180,6 @@ func testSetup() {
 			createNamespaceIfNotExists("teleport")
 			stdout, stderr, err = ExecAtWithInput(boot0, buf.Bytes(), "kubectl", "apply", "-n", "teleport", "-f", "-")
 			Expect(err).NotTo(HaveOccurred(), "stdout: %s, stderr: %s", stdout, stderr)
-
-			controlPlaceAddress := ExecSafeAt(boot0, "kubectl", "get", "node", "-l=cke.cybozu.com/master=true", `-o=jsonpath="{.items[0].metadata.name}"`)
-			ExecSafeAt(boot0, "ckecli", "etcd", "root-issue", "--output=file")
-			_, _, err = ExecAt(boot0, "env", "ETCDCTL_API=3", "etcdctl", "user", "get", "teleport",
-				fmt.Sprintf("--endpoints=https://%s:2379", controlPlaceAddress),
-				"--key=etcd-root.key", "--cert=etcd-root.crt", "--cacert=etcd-ca.crt")
-			if err != nil {
-				ExecSafeAt(boot0, "ckecli", "etcd", "user-add", "teleport", "/teleport")
-			}
-
-			_, _, err = ExecAt(boot0, "kubectl", "get", "secret", "teleport-etcd-certs", "-n=teleport")
-			if err != nil {
-				ExecSafeAt(boot0, "ckecli", "etcd", "issue", "teleport", "--output", "file")
-				ExecSafeAt(boot0, "kubectl", "-n", "teleport", "create", "secret", "generic",
-					"teleport-etcd-certs", "--from-file=ca.crt=etcd-ca.crt",
-					"--from-file=tls.crt=etcd-teleport.crt", "--from-file=tls.key=etcd-teleport.key")
-			}
 		})
 	}
 
