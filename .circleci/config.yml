@@ -304,6 +304,7 @@ jobs:
     docker:
       - image: google/cloud-sdk
     steps:
+      - checkout
       - run:
           name: Store Service Account
           command: |
@@ -311,7 +312,7 @@ jobs:
             gcloud auth activate-service-account --key-file=account.json
       - run:
           name: Delete DNS records
-          command: gcloud --project=neco-test dns record-sets import --zone=gcp0 --delete-all-existing /dev/null
+          command: bin/clean-dns.sh
 
 workflows:
   version: 2
