@@ -244,6 +244,20 @@ subjects:
     name: rook-ceph-mgr
     namespace: ceph-hdd
 ---
+kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: rook-ceph-admission-controller-rolebinding
+subjects:
+  - kind: ServiceAccount
+    name: rook-ceph-admission-controller
+    apiGroup: ""
+    namespace: ceph-hdd
+roleRef:
+  kind: ClusterRole
+  name: rook-ceph-admission-controller-role
+  apiGroup: rbac.authorization.k8s.io
+---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
@@ -257,4 +271,5 @@ subjects:
   - kind: ServiceAccount
     name: rook-ceph-cmd-reporter
     namespace: ceph-hdd
+
 
