@@ -130,11 +130,14 @@ See: [Kubernetes controllers configuration](https://docs.projectcalico.org/refer
 Get upstream helm chart:
 
 ```console
-$ cd $GOPATH/src/github.com/cybozu-go
-$ git clone https://github.com/cybozu-go/rook
+$ cd $GOPATH/src/github.com/rook
+$ git clone https://github.com/rook/rook
 $ cd rook
-$ git checkout vX.Y.Z
-$ rm -r $GOPATH/src/github.com/cybozu-go/neco-apps/rook/base/upstream/chart
+$ git remote add fork git@github.com:cybozu-go/rook.git
+$ git fetch fork
+$ git checkout neco-release
+$ ls $GOPATH/src/github.com/cybozu-go/neco-apps/rook/base/upstream/chart
+$ rm -rf $GOPATH/src/github.com/cybozu-go/neco-apps/rook/base/upstream/chart
 $ cp -a cluster/charts/rook-ceph $GOPATH/src/github.com/cybozu-go/neco-apps/rook/base/upstream/chart
 ```
 
@@ -142,7 +145,7 @@ Download Helm used in Rook. Follow `HELM_VERSION` in the upstream configuration.
 
 ```console
 # Check the Helm version, in rook repo directory downloaded above
-$ cat build/makelib/helm.mk | grep ^HELM_VERSION
+$ cat $GOPATH/src/github.com/rook/rook/build/makelib/helm.mk | grep ^HELM_VERSION
 $ HELM_VERSION=X.Y.Z
 $ curl -sSLf https://get.helm.sh/helm-v$HELM_VERSION-linux-amd64.tar.gz | sudo tar -C /usr/local/bin linux-amd64/helm --strip-components 1 -xzf -
 ```
