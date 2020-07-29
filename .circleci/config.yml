@@ -319,38 +319,25 @@ workflows:
     jobs:
       - test
       - bootstrap:
+          name: bootstrap1
           requires: ["test"]
           filters:
             branches:
               ignore: ["stage", "release", /^op-(stage|release)-.*/]
-      - upgrade-stage:
+      - bootstrap:
+          name: bootstrap2
           requires: ["test"]
           filters:
             branches:
               ignore: ["stage", "release", /^op-(stage|release)-.*/]
-      - upgrade-release:
+      - bootstrap:
+          name: bootstrap3
           requires: ["test"]
-          filters:
-            branches:
-              ignore: ["release", /^op-(stage|release)-.*/]
-      - create-pull-request-stage:
-          filters:
-            branches:
-              only:
-                - master
-          requires:
-            - bootstrap
-            - upgrade-stage
-            - upgrade-release
-
-  ceph:
-    jobs:
-      - ceph:
           filters:
             branches:
               ignore: ["stage", "release", /^op-(stage|release)-.*/]
 
-  # Test with the specified neco branch.
+              # Test with the specified neco branch.
   manual-dctest-with-neco-feature-branch:
     jobs:
       - hold:

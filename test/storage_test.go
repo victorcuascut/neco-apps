@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"math"
+	"strconv"
 	"strings"
 
 	. "github.com/onsi/ginkgo"
@@ -454,4 +455,19 @@ spec:
 		stdout, stderr, err = ExecAt(boot0, "kubectl", "exec", "-n", ns, "pod-rbd", "--", "cat", writePath)
 		Expect(err).ShouldNot(HaveOccurred(), "stdout=%s, stderr=%s", stdout, stderr)
 	})
+}
+
+func testLVTag() {
+	stdout, stderr, err := ExecAt(boot0, "for node in $(kubectl get pod -n ceph-ssd -l app=rook-ceph-osd -o json | jq -r \".items[]|.spec.nodeName\"); do ckecli ssh $node -- \"sudo lvscan --cache; sudo lvs -o lv_name,lv_tags\"; done | grep \"ceph.block_device\" | wc -l")
+	Expect(err).ShouldNot(HaveOccurred(), "stdout=%s, stderr=%s", stdout, stderr)
+	tagNum, err := strconv.Atoi(string(stdout))
+	Expect(err).ShouldNot(HaveOccurred())
+
+	stdout, stderr, err = ExecAt(boot0, "kubectl get pod -n ceph-ssd -l app=rook-ceph-osd --no-headers")
+	Expect(err).ShouldNot(HaveOccurred(), "stdout=%s, stderr=%s", stdout, stderr)
+	podNum, err := strconv.Atoi(string(stdout))
+	Expect(err).ShouldNot(HaveOccurred())
+	Expect(podNum).Should(Equal(tagNum))
+
+	fmt.Printf("lv tags num: %v, pod num: %v\n", tagNum, podNum)
 }
