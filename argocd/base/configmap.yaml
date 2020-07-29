@@ -51,6 +51,22 @@ data:
         hs.status = "Progressing"
         hs.message = "Waiting for certificate"
         return hs
+    ceph.rook.io/CephCluster:
+      health.lua: |
+        hs = {}
+        if obj.status ~= nil then
+          if obj.status.ceph ~= nil then
+            if obj.status.ceph.health == "HEALTH_OK" then
+              hs.status = "Healthy"
+              hs.message = obj.status.message
+              return hs
+            end
+          end
+        end
+
+        hs.status = "Progressing"
+        hs.message = "Waiting for Ceph cluster to become HEALTH_OK"
+        return hs
 ---
 apiVersion: v1
 kind: ConfigMap
