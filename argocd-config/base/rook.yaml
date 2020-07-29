@@ -41,6 +41,11 @@ spec:
         - /rules
     - group: rbac.authorization.k8s.io
       kind: ClusterRole
+      name: rook-ceph-agent-mount
+      jsonPointers:
+        - /rules
+    - group: rbac.authorization.k8s.io
+      kind: ClusterRole
       name: cephfs-csi-nodeplugin
       jsonPointers:
         - /rules
