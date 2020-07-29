@@ -83,7 +83,7 @@ setup:
 	go install github.com/onsi/ginkgo/ginkgo
 	curl -sSLf https://github.com/prometheus/prometheus/releases/download/v$(PROMTOOL_VERSION)/prometheus-$(PROMTOOL_VERSION).linux-amd64.tar.gz | tar -xzvf - --strip-components=1 prometheus-$(PROMTOOL_VERSION).linux-amd64/promtool
 	$(SUDO) mv promtool /usr/local/bin/promtool
-	$(WGET) -O /tmp/teleport.tgz --no-verbose https://get.gravitational.com/teleport-v$(TELEPORT_VERSION)-linux-amd64-bin.tar.gz
+	$(WGET) -O /tmp/teleport.tgz https://get.gravitational.com/teleport-v$(TELEPORT_VERSION)-linux-amd64-bin.tar.gz
 	tar -xzvf /tmp/teleport.tgz --strip-component=1 teleport/tsh
 	rm -f /tmp/teleport.tgz
 	$(SUDO) mv tsh /usr/local/bin/tsh
