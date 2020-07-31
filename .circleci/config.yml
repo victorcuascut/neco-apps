@@ -137,11 +137,20 @@ jobs:
       - image: quay.io/cybozu/golang:1.13-bionic
     steps:
       - checkout
+      # CircleCI has not yet supported to use environment variables in cache keys, so we need to use a workaround.
+      # https://support.circleci.com/hc/en-us/articles/115015426888-Clear-project-dependency-cache
+      - run: echo $CACHE_VERSION > CACHE_VERSION
+      - restore_cache:
+          key: test-download-{{ checksum "CACHE_VERSION" }}-{{ checksum "test/Makefile" }}
       - run:
           name: Setup
           command: |
             cd test
             make setup SUDO=
+      - save_cache:
+          key: test-download-{{ checksum "CACHE_VERSION" }}-{{ checksum "test/Makefile" }}
+          paths:
+            - test/download
       - run: |
           cd test
           make test
