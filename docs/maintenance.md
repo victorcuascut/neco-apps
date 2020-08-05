@@ -127,6 +127,10 @@ See: [Kubernetes controllers configuration](https://docs.projectcalico.org/refer
 
 ## rook
 
+*Do not upgrade Rook and Ceph at the same time!*
+
+Read [this document](https://github.com/rook/rook/blob/master/Documentation/ceph-upgrade.md) before.
+
 Get upstream helm chart:
 
 ```console
@@ -180,6 +184,17 @@ Assume `cybozu-go/rook` is updated in the above procedure.
 $ cd $GOPATH/src/github.com/cybozu-go/neco-apps/
 $ cp $GOPATH/src/github.com/cybozu-go/rook/cluster/examples/kubernetes/ceph/toolbox.yaml rook/base/upstream/
 ```
+
+## ceph
+
+*Do not upgrade Rook and Ceph at the same time!*
+
+Read [this document](https://github.com/rook/rook/blob/master/Documentation/ceph-upgrade.md) before.
+
+Update `spec.cephVersion.image` field in CephCluster CR.
+
+- rook/base/ceph-hdd/cluster.yaml
+- rook/base/ceph-ssd/cluster.yaml
 
 ## teleport
 
