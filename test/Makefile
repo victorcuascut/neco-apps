@@ -26,6 +26,14 @@ TELEPORT_VERSION := 4.2.10
 KUBERNETES_VERSION = 1.17.4
 ARGOCD_VERSION = 1.5.7
 
+# Cache
+DOWNLOAD_DIR := download
+KUBECTL_DLPATH := $(DOWNLOAD_DIR)/kubectl-v$(KUBERNETES_VERSION)
+KUSTOMIZE_DLPATH := $(DOWNLOAD_DIR)/kustomize-v$(KUSTOMIZE_VERSION).tar.gz
+PROMTOOL_DLPATH := $(DOWNLOAD_DIR)/prometheus-v$(PROMTOOL_VERSION).tar.gz
+TELEPORT_DLPATH := $(DOWNLOAD_DIR)/teleport-v$(TELEPORT_VERSION).tar.gz
+ARGOCD_DLPATH := $(DOWNLOAD_DIR)/argocd-v$(ARGOCD_VERSION)
+
 install.yaml: $(shell find ../argocd/base)
 	kustomize build ../argocd/base/ > install.yaml
 
@@ -71,29 +79,51 @@ dctest-upgrade:
 	cp /tmp/neco-apps/test/argocd-password.txt ./
 	UPGRADE=1 ./test.sh
 
-setup:
-	$(SUDO) apt-get update && $(SUDO) apt-get -y install wget
-	curl -sSLf -O https://storage.googleapis.com/kubernetes-release/release/v$(KUBERNETES_VERSION)/bin/linux/amd64/kubectl
-	$(SUDO) mv kubectl /usr/local/bin/kubectl
+setup-download:
+	if [ -z "$$(which wget)" ]; then \
+		$(SUDO) apt-get update && $(SUDO) apt-get -y install wget; \
+	fi
+	mkdir -p $(DOWNLOAD_DIR)
+
+$(KUBECTL_DLPATH):
+	$(MAKE) setup-download
+	$(WGET) -O $(KUBECTL_DLPATH) https://storage.googleapis.com/kubernetes-release/release/v$(KUBERNETES_VERSION)/bin/linux/amd64/kubectl
+
+$(KUSTOMIZE_DLPATH):
+	$(MAKE) setup-download
+	$(WGET) -O $(KUSTOMIZE_DLPATH) https://github.com/kubernetes-sigs/kustomize/releases/download/kustomize%2Fv${KUSTOMIZE_VERSION}/kustomize_v$(KUSTOMIZE_VERSION)_linux_amd64.tar.gz
+
+$(PROMTOOL_DLPATH):
+	$(MAKE) setup-download
+	$(WGET) -O $(PROMTOOL_DLPATH) https://github.com/prometheus/prometheus/releases/download/v$(PROMTOOL_VERSION)/prometheus-$(PROMTOOL_VERSION).linux-amd64.tar.gz
+
+$(TELEPORT_DLPATH):
+	$(MAKE) setup-download
+	$(WGET) -O $(TELEPORT_DLPATH) https://get.gravitational.com/teleport-v$(TELEPORT_VERSION)-linux-amd64-bin.tar.gz
+
+$(ARGOCD_DLPATH):
+	$(MAKE) setup-download
+	$(WGET) -O $(ARGOCD_DLPATH) https://github.com/argoproj/argo-cd/releases/download/v$(ARGOCD_VERSION)/argocd-linux-amd64
+
+setup: $(KUBECTL_DLPATH) $(KUSTOMIZE_DLPATH) $(PROMTOOL_DLPATH) $(TELEPORT_DLPATH) $(ARGOCD_DLPATH)
+	$(SUDO) cp $(KUBECTL_DLPATH) /usr/local/bin/kubectl
 	chmod +x /usr/local/bin/kubectl
 	$(SUDO) bash -c "kubectl completion bash > /etc/bash_completion.d/kubectl"
-	curl -sSLf https://github.com/kubernetes-sigs/kustomize/releases/download/kustomize%2Fv${KUSTOMIZE_VERSION}/kustomize_v${KUSTOMIZE_VERSION}_linux_amd64.tar.gz | tar zxf - -C /tmp
-	$(SUDO) mv /tmp/kustomize /usr/local/bin/kustomize
+	tar zxf $(KUSTOMIZE_DLPATH) -C /tmp
+	$(SUDO) cp /tmp/kustomize /usr/local/bin/kustomize
 	chmod +x /usr/local/bin/kustomize
-	go install github.com/onsi/ginkgo/ginkgo
-	curl -sSLf https://github.com/prometheus/prometheus/releases/download/v$(PROMTOOL_VERSION)/prometheus-$(PROMTOOL_VERSION).linux-amd64.tar.gz | tar -xzvf - --strip-components=1 prometheus-$(PROMTOOL_VERSION).linux-amd64/promtool
-	$(SUDO) mv promtool /usr/local/bin/promtool
-	$(WGET) -O /tmp/teleport.tgz https://get.gravitational.com/teleport-v$(TELEPORT_VERSION)-linux-amd64-bin.tar.gz
-	tar -xzvf /tmp/teleport.tgz --strip-component=1 teleport/tsh
-	rm -f /tmp/teleport.tgz
-	$(SUDO) mv tsh /usr/local/bin/tsh
-	curl -sSLf -O https://github.com/argoproj/argo-cd/releases/download/v$(ARGOCD_VERSION)/argocd-linux-amd64
-	$(SUDO) mv argocd-linux-amd64 /usr/local/bin/argocd
+	tar zxf $(PROMTOOL_DLPATH) -C /tmp --strip-components=1 prometheus-$(PROMTOOL_VERSION).linux-amd64/promtool
+	$(SUDO) cp /tmp/promtool /usr/local/bin/promtool
+	tar zxf $(TELEPORT_DLPATH) -C /tmp --strip-component=1 teleport/tsh
+	$(SUDO) cp /tmp/tsh /usr/local/bin/tsh
+	$(SUDO) cp $(ARGOCD_DLPATH) /usr/local/bin/argocd
 	chmod +x /usr/local/bin/argocd
 	$(SUDO) bash -c "argocd completion bash > /etc/bash_completion.d/argocd"
+	go install github.com/onsi/ginkgo/ginkgo
 
 clean:
+	rm -rf $(DOWNLOAD_DIR)
 	rm -f install.yaml
 
 .PHONY:	validation test-alert-rules kustomize-check code-check test \
-		dctest dctest-ceph dctest-reboot dctest-upgrade setup clean
+		dctest dctest-ceph dctest-reboot dctest-upgrade setup-download setup clean
