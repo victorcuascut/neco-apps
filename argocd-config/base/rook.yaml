@@ -19,56 +19,6 @@ spec:
       prune: true
       selfHeal: true
   ignoreDifferences:
-    - group: rbac.authorization.k8s.io
-      kind: ClusterRole
-      name: rook-ceph-cluster-mgmt
-      jsonPointers:
-        - /rules
-    - group: rbac.authorization.k8s.io
-      kind: ClusterRole
-      name: rook-ceph-global
-      jsonPointers:
-        - /rules
-    - group: rbac.authorization.k8s.io
-      kind: ClusterRole
-      name: rook-ceph-mgr-cluster
-      jsonPointers:
-        - /rules
-    - group: rbac.authorization.k8s.io
-      kind: ClusterRole
-      name: rook-ceph-mgr-system
-      jsonPointers:
-        - /rules
-    - group: rbac.authorization.k8s.io
-      kind: ClusterRole
-      name: rook-ceph-agent-mount
-      jsonPointers:
-        - /rules
-    - group: rbac.authorization.k8s.io
-      kind: ClusterRole
-      name: cephfs-csi-nodeplugin
-      jsonPointers:
-        - /rules
-    - group: rbac.authorization.k8s.io
-      kind: ClusterRole
-      name: cephfs-external-provisioner-runner
-      jsonPointers:
-        - /rules
-    - group: rbac.authorization.k8s.io
-      kind: ClusterRole
-      name: rbd-csi-nodeplugin
-      jsonPointers:
-        - /rules
-    - group: rbac.authorization.k8s.io
-      kind: ClusterRole
-      name: rbd-external-provisioner-runner
-      jsonPointers:
-        - /rules
-    - group: rbac.authorization.k8s.io
-      kind: ClusterRole
-      name: rook-ceph-system-psp-user
-      jsonPointers:
-        - /rules
     # count may be changed manually
     - group: ceph.rook.io
       kind: CephCluster
