@@ -269,7 +269,7 @@ func applyAndWaitForApplications(commitID string) {
 		stdout, stderr, err := ExecAt(boot0, "argocd", "app", "create", "argocd-config",
 			"--upsert",
 			"--repo", "https://github.com/cybozu-go/neco-apps.git",
-			"--path", "argocd-config/overlays/gcp",
+			"--path", "argocd-config/overlays/"+overlayName,
 			"--dest-namespace", "argocd",
 			"--dest-server", "https://kubernetes.default.svc",
 			"--sync-policy", "none",
@@ -280,10 +280,10 @@ func applyAndWaitForApplications(commitID string) {
 		return nil
 	}).Should(Succeed())
 
-	ExecSafeAt(boot0, "cd", "./neco-apps", "&&", "argocd", "app", "sync", "argocd-config", "--local", "argocd-config/overlays/gcp", "--async")
+	ExecSafeAt(boot0, "cd", "./neco-apps", "&&", "argocd", "app", "sync", "argocd-config", "--local", "argocd-config/overlays/"+overlayName, "--async")
 
 	By("getting application list")
-	stdout, _, err := kustomizeBuild("../argocd-config/overlays/gcp")
+	stdout, _, err := kustomizeBuild("../argocd-config/overlays/" + overlayName)
 	Expect(err).ShouldNot(HaveOccurred())
 
 	var appList []string
