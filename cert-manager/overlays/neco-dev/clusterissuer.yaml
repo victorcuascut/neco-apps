@@ -1,0 +1,16 @@
+apiVersion: cert-manager.io/v1alpha2
+kind: ClusterIssuer
+metadata:
+  name: clouddns
+spec:
+  acme:
+    solvers:
+      - dns01:
+          clouddns:
+            project: neco-dev
+            serviceAccountSecretRef:
+              key: account.json
+              name: clouddns
+        selector:
+          dnsZones:
+            - neco-dev.dev-ne.co
