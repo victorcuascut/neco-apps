@@ -10,3 +10,4 @@ account.json
 expected-secret*.yaml
 current-secret.yaml
 argocd-password.txt
+download/

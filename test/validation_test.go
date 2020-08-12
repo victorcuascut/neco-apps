@@ -54,10 +54,11 @@ func kustomizeBuild(dir string) ([]byte, []byte, error) {
 
 func testApplicationResources(t *testing.T) {
 	targetRevisions := map[string]string{
-		"gcp":    "release",
-		"osaka0": "release",
-		"stage0": "stage",
-		"tokyo0": "release",
+		"gcp":      "release",
+		"neco-dev": "release",
+		"osaka0":   "release",
+		"stage0":   "stage",
+		"tokyo0":   "release",
 	}
 
 	syncWaves := map[string]string{
