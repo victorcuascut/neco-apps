@@ -3,15 +3,15 @@ How to maintain neco-apps
 
 ## argocd
 
-Check [releases](https://github.com/argoproj/argo-cd/releases) for changes.
+1. Check [releases](https://github.com/argoproj/argo-cd/releases) for changes.
 
-Download the upstream manifest as follows:
+1. Check [upgrading overview](https://github.com/argoproj/argo-cd/blob/master/docs/operator-manual/upgrading/overview.md) when upgrading major or minor version.
 
-```console
-$ curl -sLf -o argocd/base/upstream/install.yaml https://raw.githubusercontent.com/argoproj/argo-cd/vX.Y.Z/manifests/install.yaml
-```
-
-Then check the diffs by `git diff`.
+1. Download the upstream manifest as follows:
+   ```console
+   $ curl -sLf -o argocd/base/upstream/install.yaml https://raw.githubusercontent.com/argoproj/argo-cd/vX.Y.Z/manifests/install.yaml
+   ```
+   Then check the diffs by `git diff`.
 
 ## cert-manager
 

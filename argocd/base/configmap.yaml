@@ -67,6 +67,8 @@ data:
         hs.status = "Progressing"
         hs.message = "Waiting for Ceph cluster to become HEALTH_OK"
         return hs
+  resource.compareoptions: |
+    ignoreAggregatedRoles: true
 ---
 apiVersion: v1
 kind: ConfigMap
