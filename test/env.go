@@ -6,6 +6,7 @@ import (
 )
 
 var (
+	overlayName         = os.Getenv("OVERLAY")
 	doBootstrap         = os.Getenv("BOOTSTRAP") == "1"
 	doCeph              = os.Getenv("CEPH") == "1"
 	doUpgrade           = os.Getenv("UPGRADE") == "1"
