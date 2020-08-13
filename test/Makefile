@@ -108,17 +108,17 @@ $(ARGOCD_DLPATH):
 
 setup: $(KUBECTL_DLPATH) $(KUSTOMIZE_DLPATH) $(PROMTOOL_DLPATH) $(TELEPORT_DLPATH) $(ARGOCD_DLPATH)
 	$(SUDO) cp $(KUBECTL_DLPATH) /usr/local/bin/kubectl
-	chmod +x /usr/local/bin/kubectl
+	$(SUDO) chmod +x /usr/local/bin/kubectl
 	$(SUDO) bash -c "kubectl completion bash > /etc/bash_completion.d/kubectl"
 	tar zxf $(KUSTOMIZE_DLPATH) -C /tmp
 	$(SUDO) cp /tmp/kustomize /usr/local/bin/kustomize
-	chmod +x /usr/local/bin/kustomize
+	$(SUDO) chmod +x /usr/local/bin/kustomize
 	tar zxf $(PROMTOOL_DLPATH) -C /tmp --strip-components=1 prometheus-$(PROMTOOL_VERSION).linux-amd64/promtool
 	$(SUDO) cp /tmp/promtool /usr/local/bin/promtool
 	tar zxf $(TELEPORT_DLPATH) -C /tmp --strip-component=1 teleport/tsh
 	$(SUDO) cp /tmp/tsh /usr/local/bin/tsh
 	$(SUDO) cp $(ARGOCD_DLPATH) /usr/local/bin/argocd
-	chmod +x /usr/local/bin/argocd
+	$(SUDO) chmod +x /usr/local/bin/argocd
 	$(SUDO) bash -c "argocd completion bash > /etc/bash_completion.d/argocd"
 	go install github.com/onsi/ginkgo/ginkgo
 
