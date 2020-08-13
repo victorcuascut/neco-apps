@@ -14,6 +14,9 @@
 # Ignore go.sum
 /go.sum
 
+# Ignore downloaded files
+/test/download
+
 # Editors
 *~
 .*.swp
