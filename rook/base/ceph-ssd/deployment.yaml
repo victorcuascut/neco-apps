@@ -39,6 +39,8 @@ spec:
           value: "true"
         - name: ROOK_CSI_ENABLE_CEPHFS
           value: "false"
+        - name: CSI_LOG_LEVEL
+          value: "5"
         - name: CSI_PLUGIN_PRIORITY_CLASSNAME
           value: ""
         - name: CSI_PROVISIONER_PRIORITY_CLASSNAME
@@ -78,4 +80,3 @@ spec:
             memory: 256Mi
           
       serviceAccountName: rook-ceph-system
-
