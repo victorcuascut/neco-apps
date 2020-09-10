@@ -24,7 +24,7 @@ configMapGenerator:
     files:
       - ./upstream/base/scheduler-options.yaml
 
-imageTags:
+images:
   - name: quay.io/topolvm/topolvm
     newTag: 0.5.2
 
