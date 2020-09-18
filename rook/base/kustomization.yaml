@@ -6,3 +6,7 @@ resources:
   - common/psp.yaml
   - ceph-hdd
   - ceph-ssd
+images:
+  - name: rook/ceph
+    newName: quay.io/kfyharukz/rook-ceph
+    newTag: 2020-09-18-1
